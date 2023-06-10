@@ -1,28 +1,33 @@
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.google.gson.Gson;
+import okhttp3.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class LiveTool2 {
 	//【每次启动前都要配置最新的cookie和csrf，否则可能有bug】
-	private static final String COOKIE="buvid3=1F1F7921-F2D6-4EBF-AE2E-940EF3B15C2F167645infoc; b_nut=1638577021; LIVE_BUVID=AUTO1816391426835696; blackside_state=0; i-wanna-go-back=-1; AMCV_98CF678254E93B1B0A4C98A5%40AdobeOrg=-2121179033%7CMCMID%7C90963336535157033360013591568695033276%7CMCAAMLH-1642902775%7C11%7CMCAAMB-1642902775%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1642305175s%7CNONE%7CvVersion%7C5.3.0; buvid_fp_plain=undefined; CURRENT_BLACKGAP=0; buvid4=7B0B3A66-E66C-ED0B-5511-89246BA0DA9824208-022012117-nt%2F2CNKonVBoS3WxE6jcIw%3D%3D; fingerprint3=6b7de698001c8c25680e4976744b76f6; is-2022-channel=1; hit-new-style-dyn=0; rpdid=|(u)~mmuu~|l0J'uYY)~~mmJR; _uuid=7D10B10E35-7DD3-E110D-862A-2A9F3F93572890225infoc; DedeUserID=353379484; DedeUserID__ckMd5=057d2bff43481fec; CURRENT_FNVAL=4048; header_theme_version=CLOSE; nostalgia_conf=-1; CURRENT_PID=00b009f0-d2d4-11ed-b880-cfd981227f14; FEED_LIVE_VERSION=V8; hit-dyn-v2=1; CURRENT_QUALITY=0; fingerprint=3d81c3c5d7d4725fd1e689257136ef8d; buvid_fp=3d81c3c5d7d4725fd1e689257136ef8d; PVID=7; SESSDATA=c0ba8db7%2C1701663766%2C69a54%2A62; bili_jct=c5d21ab43c3a6f667ba691cae7f9c5e9; sid=6i2ye9jx; home_feed_column=5; innersign=0; bp_video_offset_353379484=805228590446673900; b_lsid=1010102A561_188A092455A; browser_resolution=1865-969; bsource=search_bing";
-	private static final String CSRF="c5d21ab43c3a6f667ba691cae7f9c5e9";
-	private static final String taskId="23268e79";
-	private static final String act_name="%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%931.1%E7%89%88%E6%9C%AC%E4%BB%BB%E5%8A%A1%E3%80%90%E7%9B%B4%E6%92%AD%E3%80%91";
-	private static final String task_name="%E6%AF%8F%E6%97%A5%E5%BC%80%E6%92%AD%E6%BB%A1120%E5%88%86%E9%92%9F";
-	private static final String reward_name="%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA*5";
+    private static String f = "config.json";
+    private static String COOKIE;
+    private static String CSRF;
+    private static String value = "";
+    private static String refresh_csrf;
+    private static String ac_time_value;
+	private static String taskId="401a8931";
+	private static String act_name="%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%931.1%E7%89%88%E6%9C%AC%E4%BB%BB%E5%8A%A1%E3%80%90%E7%9B%B4%E6%92%AD%E3%80%91";
+	private static String task_name="%E6%AF%8F%E6%97%A5%E5%BC%80%E6%92%AD%E6%BB%A1120%E5%88%86%E9%92%9F";
+	private static String reward_name="%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA*5";
+    private static int hours=1;
+    private static int Minutes=59;
+    private static int Seconds=59;
 	private static final int interval=1; //调速，隔xx毫秒发送一次请求
 
 	private static final int printInterval=5000/(interval+9); //打印信息的间隔次数，防止打印信息刷屏
@@ -31,14 +36,69 @@ public class LiveTool2 {
 	static String prizeName = null;
 	static boolean satisfied=true; //**脚本运行前**领取条件是否满足
 
+    public static Map<String,String> cookieToMap(String value) {
+        Map<String, String> map = new HashMap<String, String>();
+        value = value.replace(" ", "");
+        if (value.contains(";")) {
+            String values[] = value.split(";");
+            for (String val : values) {
+                String vals[] = val.split("=");
+                map.put(vals[0], vals[1]);
+            }
+        } else {
+            String values[] = value.split("=");
+            map.put(values[0], values[1]);
+        }
+        return map;
+    }
+    public static String MapTocookie(Map<String,String> map) {
+        map.forEach((k, v) -> {
+            value = value + k + "=" + v + ";";
+            System.out.println("Key: " + k + ", Value: " + v);
+        });
+        return value;
+    }
+    public static Map<String, Object> readJsonFile(String fileName) {
+        Gson gson = new Gson();
+        String json;
+        try {
+            File file = new File(fileName);
+            Reader reader = new InputStreamReader(new FileInputStream(file), "utf-8");
+            int ch = 0;
+            StringBuffer buffer = new StringBuffer();
+            while ((ch = reader.read()) != -1) {
+                buffer.append((char) ch);
+            }
+            reader.close();
+            json = buffer.toString();
+            return gson.fromJson(json, Map.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 	@SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
 	public static void main(String[] args) throws IOException,InterruptedException{
-
-		OkHttpClient client=new OkHttpClient.Builder()
-											.readTimeout(1, TimeUnit.MINUTES)
-											.build();
-		ObjectMapper mapper = new ObjectMapper();
-		System.out.println("获取到task_id:" + taskId);
+        //String fileName = "src/main/resources/config.json";
+        Map<String, Object> config = readJsonFile(f);
+        COOKIE= (String) config.get("cookie");
+        ac_time_value = (String) config.get("ac_time_value");
+        OkHttpClient client=new OkHttpClient.Builder()
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> cookiemap = cookieToMap(COOKIE);
+        CSRF = cookiemap.get("bili_jct");
+        taskId = (String) ((Map<String, Object>) config.get("2")).get("taskId");
+        System.out.println("获取到task_id:" + taskId);
+        Map<String, Object> time = (Map<String, Object>) ((Map<String, Object>) config.get("2")).get("time");
+        hours = 1;
+        Minutes = 59;
+        Seconds = 59;
+        act_name = (String) ((Map<String, Object>) config.get("2")).get("act_name");
+        task_name = (String) ((Map<String, Object>) config.get("2")).get("task_name");
+        reward_name = (String) ((Map<String, Object>) config.get("2")).get("reward_name");
 
 		/*先验证领取条件的原因是，如果不满足领取条件，那么`infoUrl`的查询结果中的`receive_id`字段为0
 		  这是直播系统的一个安全措施，只有满足领取条件系统才会告诉你真正的`receive_id`*/
@@ -48,13 +108,13 @@ public class LiveTool2 {
 		int a=1;
 		while(a==1) {
 			Date curTime1 = new Date();
-			if (curTime1.getHours() == 1) {
+			if (curTime1.getHours() == hours) {
 				while(a==1) {
 					Date curTime3 = new Date();
-					if (curTime3.getMinutes() == 59) {
+					if (curTime3.getMinutes() == Minutes) {
 						while(a==1) {
 							Date curTime4 = new Date();
-							if (curTime4.getSeconds() == 59) {
+							if (curTime4.getSeconds() == Seconds) {
 								a=0;
 							} else {
 								System.out.println(dateFormat1.format(new Date()) + "秒不满足");
@@ -71,6 +131,111 @@ public class LiveTool2 {
 				TimeUnit.SECONDS.sleep(180);
 			}
 		}
+
+        String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
+        Request getrefresh =new Request.Builder()
+                .url(refreshUrl)
+                .get()
+                .addHeader("Cookie", COOKIE)
+                .build();
+        Response refreshRes = client.newCall(getrefresh).execute();
+        Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
+        boolean refresh = Boolean.parseBoolean((String) ((Map<String, Object>) refMap.get("data")).get("refresh"));
+        if(refresh) {
+            System.out.println("更新cookie...");
+            String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+            Request getCorrespondPath = new Request.Builder()
+                    .url(CPathapi)
+                    .get()
+                    .build();
+            Response CPResponse = client.newCall(getCorrespondPath).execute();
+            Map<String, Object> CPMap = mapper.readValue(CPResponse.body().string(), new TypeReference<>() {
+            });
+            String CorrespondPath = (String) CPMap.get("CorrespondPath");
+            System.out.println("CorrespondPath:" + CorrespondPath);
+
+            String csrfUrl = String.format("https://www.bilibili.com/correspond/1/%s", CorrespondPath);
+            Request getcsrf = new Request.Builder()
+                    .url(csrfUrl)
+                    .get()
+                    .addHeader("Cookie", COOKIE)
+                    .build();
+            Response csrfResponse = client.newCall(getcsrf).execute();
+            String csrfbady = csrfResponse.body().string();
+            Matcher CSRFZZ = Pattern.compile("(?<=id=\"1-name\">).*(?=</div><div)").matcher(csrfbady);
+            while (CSRFZZ.find()) {
+                refresh_csrf = CSRFZZ.group();
+                System.out.println(CSRFZZ.group());
+            }
+            String refresh_token = ac_time_value;
+            FormBody refreshBody = new FormBody.Builder()
+                    .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
+                    .add("refresh_csrf", refresh_csrf)
+                    .add("source", "main_web")
+                    .add("refresh_token", refresh_token)
+                    .build();
+            Request refreshRequest = new Request.Builder()
+                    .url("https://passport.bilibili.com/x/passport-login/web/cookie/refresh")
+                    .post(refreshBody)
+                    .addHeader("Cookie", COOKIE)
+                    .build();
+            Response refreshResponse = client.newCall(refreshRequest).execute();
+            Map<String, Object> refreshMap = mapper.readValue(refreshResponse.body().string(), new TypeReference<>() {
+            });
+            String newrefresh_token = (String) ((Map<String, Object>) refreshMap.get("data")).get("refresh_token");
+            System.out.println(newrefresh_token);
+            String anString = "";
+            if (refreshResponse.isSuccessful()) {//response 请求成功
+                Headers headers = refreshResponse.headers();
+                List<String> cookies = headers.values("Set-Cookie");
+                String cc = "";
+                for (String c : cookies) {
+                    String s = c.split(";")[0];
+                    cc = cc + s + ";";
+                }
+                System.out.println(cc);
+                Map<String, String> ccmap = cookieToMap(cc);
+                //String cookiejson = JSON.toJSONString(cookiemap);
+                //JSONObject jsonObject = JSONObject.parseObject(cookiejson);
+                cookiemap.put("SESSDATA", ccmap.get("SESSDATA"));
+                cookiemap.put("bili_jct", ccmap.get("bili_jct"));
+                cookiemap.put("DedeUserID", ccmap.get("DedeUserID"));
+                cookiemap.put("DedeUserID__ckMd5", ccmap.get("DedeUserID__ckMd5"));
+                cookiemap.put("sid", ccmap.get("sid"));
+            }
+            String newcookie = MapTocookie(cookiemap);
+            config.put("cookie", newcookie);
+            config.put("ac_time_value", newrefresh_token);
+            String newconfig = JSON.toJSONString(config);
+
+            try {
+                FileWriter fw = new FileWriter(f); //创,追加写入
+                fw.write(newconfig); //写
+                fw.close();  //关
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            FormBody confirmBody = new FormBody.Builder()
+                    .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
+                    .add("refresh_token", refresh_token)
+                    .build();
+            Request confirmRequest = new Request.Builder()
+                    .url("https://passport.bilibili.com/x/passport-login/web/confirm/refresh")
+                    .post(confirmBody)
+                    .addHeader("Cookie", COOKIE)
+                    .build();
+            Response confirmResponse = client.newCall(confirmRequest).execute();
+            Map<String, Object> confirmMap = mapper.readValue(confirmResponse.body().string(), new TypeReference<>() {
+            });
+            String code = (String) confirmMap.get("code");
+            if (code == "0") {
+                System.out.println("刷新cookie和CSRF成功");
+            } else {
+                System.out.println("发生错误:" + confirmMap.get("message"));
+            }
+        }
+
 		System.out.println("等待领取条件满足...");
 		String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);
 		Request infoRequest =new Request.Builder()
@@ -97,6 +262,7 @@ public class LiveTool2 {
 		int actId=(int)groupListMap.get("act_id");
 		int bodyTaskId=(int)groupListMap.get("task_id");
 		int groupId=(int)groupListMap.get("group_id");
+        prizeName =(String) ((Map<String, Object>) taskInfoMap.get("reward_info")).get("reward_name");
 
 		//2.领取条件满足后，脚本触发，CPU使用率会接近100%
 		System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
@@ -139,7 +305,6 @@ public class LiveTool2 {
 						System.out.println("Success by "+Thread.currentThread().getName());
 						Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
 						key=((Map<String, String>)dataMap.get("extra")).get("cdkey_content");
-						prizeName=(String)dataMap.get("name");
 						end=true;
 					}else if(message.equals("请求过于频繁，请稍后再试")){
 						//Response: {"code":-509,"message":"请求过于频繁，请稍后再试","ttl":1}

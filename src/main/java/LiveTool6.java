@@ -20,12 +20,12 @@ public class LiveTool6 {
 	private static String CSRF;
 	private static String value = "";
 	private static String refresh_csrf;
+	private static String ac_time_value;
 	private static final String taskId="c96e7d04";
 	private static final String act_name="%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%931.1%E7%89%88%E6%9C%AC%E4%BB%BB%E5%8A%A1%E3%80%90%E7%9B%B4%E6%92%AD%E3%80%91";
 	private static final String task_name="%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BD%93%E6%97%A5%E8%87%B3%E5%B0%91%E6%9C%891%E5%90%8D%E7%94%A8%E6%88%B7%E8%A7%82%E7%9C%8B%E6%BB%A110%E5%88%86%E9%92%9F";
 	private static final String reward_name="%E4%BF%A1%E7%94%A8%E7%82%B9*11111";
-	private static String ac_time_value;
-	private static final int interval=1000; //调速，隔xx毫秒发送一次请求
+	private static final int interval=1; //调速，隔xx毫秒发送一次请求
 
 	private static final int printInterval=5000/(interval+9); //打印信息的间隔次数，防止打印信息刷屏
 	volatile static boolean end = false; //抢奖品程序是否结束
@@ -92,7 +92,7 @@ public class LiveTool6 {
 		//1.等待领取条件满足
 		SimpleDateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss");
 		System.out.println("["+dateFormat1.format(new Date())+"] 等待时间满足...");
-		int a=0;
+		int a=1;
 		while(a==1) {
 			Date curTime1 = new Date();
 			if (curTime1.getHours() == 17) {
@@ -120,97 +120,110 @@ public class LiveTool6 {
 		}
 		Map<String, String> cookiemap = cookieToMap(COOKIE);
 
-		System.out.println("更新cookie...");
-		String CPathapi=String.format("https://api.ikkun.cf/?lx=json");
-		Request getCorrespondPath =new Request.Builder()
-				.url(CPathapi)
-				.get()
-				.build();
-		Response CPResponse = client.newCall(getCorrespondPath).execute();
-		Map<String, Object> CPMap = mapper.readValue(CPResponse.body().string(), new TypeReference<>(){});
-		String CorrespondPath = (String) CPMap.get("CorrespondPath");
-		System.out.println("CorrespondPath:" + CorrespondPath);
-
-		String csrfUrl=String.format("https://www.bilibili.com/correspond/1/%s",CorrespondPath);
-		Request getcsrf =new Request.Builder()
-				.url(csrfUrl)
+		String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
+		Request getrefresh =new Request.Builder()
+				.url(refreshUrl)
 				.get()
 				.addHeader("Cookie", COOKIE)
 				.build();
-		Response csrfResponse = client.newCall(getcsrf).execute();
-		String csrfbady = csrfResponse.body().string();
-		Matcher CSRFZZ = Pattern.compile("(?<=id=\"1-name\">).*(?=</div><div)").matcher(csrfbady);
-		while(CSRFZZ.find()) {
-			refresh_csrf = CSRFZZ.group();
-			System.out.println(CSRFZZ.group());
-		}
-		CSRF = cookiemap.get("bili_jct");
-		String refresh_token = ac_time_value;
-		FormBody refreshBody =new FormBody.Builder()
-				.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
-				.add("refresh_csrf",refresh_csrf)
-				.add("source", "main_web")
-				.add("refresh_token", refresh_token)
-				.build();
-		Request refreshRequest=new Request.Builder()
-				.url("https://passport.bilibili.com/x/passport-login/web/cookie/refresh")
-				.post(refreshBody)
-				.addHeader("Cookie",COOKIE)
-				.build();
-		Response refreshResponse = client.newCall(refreshRequest).execute();
-		Map<String, Object> refreshMap = mapper.readValue(refreshResponse.body().string(), new TypeReference<>(){});
-		String newrefresh_token = (String) ((Map<String, Object>) refreshMap.get("data")).get("refresh_token");
-		System.out.println(newrefresh_token);
-		String anString = "";
-		if (refreshResponse.isSuccessful()) {//response 请求成功
-			Headers headers = refreshResponse.headers();
-			List<String> cookies = headers.values("Set-Cookie");
-			String cc="";
-			for (String c:cookies) {
-				String s = c.split(";")[0];
-				cc=cc+s+";";
+		Response refreshRes = client.newCall(getrefresh).execute();
+		Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
+		boolean refresh = Boolean.parseBoolean((String) ((Map<String, Object>) refMap.get("data")).get("refresh"));
+		if(refresh=true) {
+			System.out.println("更新cookie...");
+			String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+			Request getCorrespondPath = new Request.Builder()
+					.url(CPathapi)
+					.get()
+					.build();
+			Response CPResponse = client.newCall(getCorrespondPath).execute();
+			Map<String, Object> CPMap = mapper.readValue(CPResponse.body().string(), new TypeReference<>() {
+			});
+			String CorrespondPath = (String) CPMap.get("CorrespondPath");
+			System.out.println("CorrespondPath:" + CorrespondPath);
+
+			String csrfUrl = String.format("https://www.bilibili.com/correspond/1/%s", CorrespondPath);
+			Request getcsrf = new Request.Builder()
+					.url(csrfUrl)
+					.get()
+					.addHeader("Cookie", COOKIE)
+					.build();
+			Response csrfResponse = client.newCall(getcsrf).execute();
+			String csrfbady = csrfResponse.body().string();
+			Matcher CSRFZZ = Pattern.compile("(?<=id=\"1-name\">).*(?=</div><div)").matcher(csrfbady);
+			while (CSRFZZ.find()) {
+				refresh_csrf = CSRFZZ.group();
+				System.out.println(CSRFZZ.group());
 			}
-			System.out.println(cc);
-			Map<String, String> ccmap = cookieToMap(cc);
-			//String cookiejson = JSON.toJSONString(cookiemap);
-			//JSONObject jsonObject = JSONObject.parseObject(cookiejson);
-			cookiemap.put("SESSDATA", ccmap.get("SESSDATA"));
-			cookiemap.put("bili_jct", ccmap.get("bili_jct"));
-			cookiemap.put("DedeUserID", ccmap.get("DedeUserID"));
-			cookiemap.put("DedeUserID__ckMd5", ccmap.get("DedeUserID__ckMd5"));
-			cookiemap.put("sid", ccmap.get("sid"));
-		}
-		String newcookie= MapTocookie(cookiemap);
-		config.put("cookie",newcookie);
-		config.put("ac_time_value",newrefresh_token);
-		String newconfig = JSON.toJSONString(config);
+			CSRF = cookiemap.get("bili_jct");
+			String refresh_token = ac_time_value;
+			FormBody refreshBody = new FormBody.Builder()
+					.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
+					.add("refresh_csrf", refresh_csrf)
+					.add("source", "main_web")
+					.add("refresh_token", refresh_token)
+					.build();
+			Request refreshRequest = new Request.Builder()
+					.url("https://passport.bilibili.com/x/passport-login/web/cookie/refresh")
+					.post(refreshBody)
+					.addHeader("Cookie", COOKIE)
+					.build();
+			Response refreshResponse = client.newCall(refreshRequest).execute();
+			Map<String, Object> refreshMap = mapper.readValue(refreshResponse.body().string(), new TypeReference<>() {
+			});
+			String newrefresh_token = (String) ((Map<String, Object>) refreshMap.get("data")).get("refresh_token");
+			System.out.println(newrefresh_token);
+			String anString = "";
+			if (refreshResponse.isSuccessful()) {//response 请求成功
+				Headers headers = refreshResponse.headers();
+				List<String> cookies = headers.values("Set-Cookie");
+				String cc = "";
+				for (String c : cookies) {
+					String s = c.split(";")[0];
+					cc = cc + s + ";";
+				}
+				System.out.println(cc);
+				Map<String, String> ccmap = cookieToMap(cc);
+				//String cookiejson = JSON.toJSONString(cookiemap);
+				//JSONObject jsonObject = JSONObject.parseObject(cookiejson);
+				cookiemap.put("SESSDATA", ccmap.get("SESSDATA"));
+				cookiemap.put("bili_jct", ccmap.get("bili_jct"));
+				cookiemap.put("DedeUserID", ccmap.get("DedeUserID"));
+				cookiemap.put("DedeUserID__ckMd5", ccmap.get("DedeUserID__ckMd5"));
+				cookiemap.put("sid", ccmap.get("sid"));
+			}
+			String newcookie = MapTocookie(cookiemap);
+			config.put("cookie", newcookie);
+			config.put("ac_time_value", newrefresh_token);
+			String newconfig = JSON.toJSONString(config);
 
-		try {
-			FileWriter fw = new FileWriter(f); //创,追加写入
-			fw.write(newconfig); //写
-			fw.close();  //关
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			try {
+				FileWriter fw = new FileWriter(f); //创,追加写入
+				fw.write(newconfig); //写
+				fw.close();  //关
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-		FormBody confirmBody =new FormBody.Builder()
-				.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
-				.add("refresh_token", refresh_token)
-				.build();
-		Request confirmRequest=new Request.Builder()
-				.url("https://passport.bilibili.com/x/passport-login/web/confirm/refresh")
-				.post(confirmBody)
-				.addHeader("Cookie",COOKIE)
-				.build();
-		Response confirmResponse = client.newCall(confirmRequest).execute();
-		Map<String, Object> confirmMap = mapper.readValue(confirmResponse.body().string(), new TypeReference<>(){});
-		String code = (String) confirmMap.get("code");
-		if(code == "0") {
-			System.out.println("刷新cookie和CSRF成功");
-		}else{
-			System.out.println("发生错误:" + confirmMap.get("message"));
+			FormBody confirmBody = new FormBody.Builder()
+					.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
+					.add("refresh_token", refresh_token)
+					.build();
+			Request confirmRequest = new Request.Builder()
+					.url("https://passport.bilibili.com/x/passport-login/web/confirm/refresh")
+					.post(confirmBody)
+					.addHeader("Cookie", COOKIE)
+					.build();
+			Response confirmResponse = client.newCall(confirmRequest).execute();
+			Map<String, Object> confirmMap = mapper.readValue(confirmResponse.body().string(), new TypeReference<>() {
+			});
+			String code = (String) confirmMap.get("code");
+			if (code == "0") {
+				System.out.println("刷新cookie和CSRF成功");
+			} else {
+				System.out.println("发生错误:" + confirmMap.get("message"));
+			}
 		}
-
 
 		System.out.println("等待领取条件满足...");
 		String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);
