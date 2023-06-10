@@ -1,0 +1,36 @@
+<html>
+<body>
+<h1>## 运行效果</h1>
+<br>
+<img src="./yf.pictures/image-20220831191210506.png" alt="image-20220831191210506" style="zoom:80%;" />
+<br>
+<h1>## 使用方法</h1>
+<br>
+1. 浏览器进入奖品页面
+<br>
+   <img src="./yf.pictures/image-20220831185711482.png" alt="image-20220831185711482" style="zoom:80%;" />
+   <br>
+2. F12打开开发者选项
+<br>
+3. 进入"网络"标签
+<br>
+4. 刷新，找到`single_task`开头的URL，保存CSRF
+<br>
+   <img src="./yf.pictures/image-20220831184349709.png" alt="image-20220831184349709" style="zoom:80%;" />
+<br>
+5. 再在"请求标头"中找到Cookie，右键"复制值"
+<br>
+   <img src="./yf.pictures/image-20220831184720930.png" alt="image-20220831184720930" style="zoom:80%;" />
+<br>
+6. 将获取的CSRF和Cookie填入
+<br>
+   <img src="./yf.pictures/image-20220831184947526.png" alt="image-20220831184947526" style="zoom:80%;" />
+<br>
+7. 启动
+<br>
+8. 输入URL中的task_id
+<br>
+   <img src="./yf.pictures/image-20220831185841325.png" alt="image-20220831185841325" style="zoom:80%;" />
+<br>
+</body>
+</html>
