@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import okhttp3.*;
 
 import java.io.*;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -21,11 +23,15 @@ public class LiveTool6 {
 	private static String value = "";
 	private static String refresh_csrf;
 	private static String ac_time_value;
-	private static final String taskId="c96e7d04";
-	private static final String act_name="%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%931.1%E7%89%88%E6%9C%AC%E4%BB%BB%E5%8A%A1%E3%80%90%E7%9B%B4%E6%92%AD%E3%80%91";
-	private static final String task_name="%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BD%93%E6%97%A5%E8%87%B3%E5%B0%91%E6%9C%891%E5%90%8D%E7%94%A8%E6%88%B7%E8%A7%82%E7%9C%8B%E6%BB%A110%E5%88%86%E9%92%9F";
-	private static final String reward_name="%E4%BF%A1%E7%94%A8%E7%82%B9*11111";
-	private static final int interval=1; //调速，隔xx毫秒发送一次请求
+	private static String taskId="c96e7d04";
+	private static String act_name="%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%931.1%E7%89%88%E6%9C%AC%E4%BB%BB%E5%8A%A1%E3%80%90%E7%9B%B4%E6%92%AD%E3%80%91";
+	private static String task_name="%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BD%93%E6%97%A5%E8%87%B3%E5%B0%91%E6%9C%891%E5%90%8D%E7%94%A8%E6%88%B7%E8%A7%82%E7%9C%8B%E6%BB%A110%E5%88%86%E9%92%9F";
+	private static String reward_name="%E4%BF%A1%E7%94%A8%E7%82%B9*11111";
+	private static String wj = "6";
+	private static int hours=1;
+	private static int Minutes=59;
+	private static int Seconds=59;
+	private static int interval=1; //调速，隔xx毫秒发送一次请求
 
 	private static final int printInterval=5000/(interval+9); //打印信息的间隔次数，防止打印信息刷屏
 	volatile static boolean end = false; //抢奖品程序是否结束
@@ -74,24 +80,50 @@ public class LiveTool6 {
 			return null;
 		}
 	}
+	public static void writeFile(String file,String newfile,boolean append){
+		try {
+			FileWriter fw = new FileWriter(file,append); //创,覆盖写入
+			fw.write(newfile); //写
+			fw.close();  //关
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
 	public static void main(String[] args) throws IOException,InterruptedException{
 		//String fileName = "src/main/resources/config.json";
 		Map<String, Object> config = readJsonFile(f);
-		COOKIE= (String) config.get("cookie");
-		ac_time_value = (String) config.get("ac_time_value");
+		Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+		//↓判断配置是否存在,不存在则用全局配置
+		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
+			COOKIE= (String) config.get("cookie");
+			ac_time_value = (String) config.get("ac_time_value");
+			taskId = (String) configmap.get("taskId");
+			interval = Integer.parseInt(configmap.get("interval").toString());
+			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
+			hours = Integer.parseInt(time.get("h").toString());
+			Minutes = Integer.parseInt(time.get("m").toString());
+			Seconds = Integer.parseInt(time.get("s").toString());
+			//更改变量为config配置
+		}else{
+			System.out.println("config.json配置文件错误或不存在");
+		}
+
 		OkHttpClient client=new OkHttpClient.Builder()
-											.readTimeout(1, TimeUnit.MINUTES)
-											.build();
+				.readTimeout(1, TimeUnit.MINUTES)
+				.build();
 		ObjectMapper mapper = new ObjectMapper();
+		Map<String, String> cookiemap = cookieToMap(COOKIE);
+		CSRF = cookiemap.get("bili_jct");
 		System.out.println("获取到task_id:" + taskId);
+		System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
 		/*先验证领取条件的原因是，如果不满足领取条件，那么`infoUrl`的查询结果中的`receive_id`字段为0
 		  这是直播系统的一个安全措施，只有满足领取条件系统才会告诉你真正的`receive_id`*/
 		//1.等待领取条件满足
 		SimpleDateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss");
-		System.out.println("["+dateFormat1.format(new Date())+"] 等待时间满足...");
+		System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
 		int a=1;
 		while(a==1) {
 			Date curTime1 = new Date();
@@ -118,7 +150,6 @@ public class LiveTool6 {
 				TimeUnit.SECONDS.sleep(180);
 			}
 		}
-		Map<String, String> cookiemap = cookieToMap(COOKIE);
 
 		String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
 		Request getrefresh =new Request.Builder()
@@ -173,7 +204,6 @@ public class LiveTool6 {
 			});
 			String newrefresh_token = (String) ((Map<String, Object>) refreshMap.get("data")).get("refresh_token");
 			System.out.println(newrefresh_token);
-			String anString = "";
 			if (refreshResponse.isSuccessful()) {//response 请求成功
 				Headers headers = refreshResponse.headers();
 				List<String> cookies = headers.values("Set-Cookie");
@@ -196,14 +226,7 @@ public class LiveTool6 {
 			config.put("cookie", newcookie);
 			config.put("ac_time_value", newrefresh_token);
 			String newconfig = JSON.toJSONString(config);
-
-			try {
-				FileWriter fw = new FileWriter(f); //创,追加写入
-				fw.write(newconfig); //写
-				fw.close();  //关
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			writeFile(f,newconfig,true);
 
 			FormBody confirmBody = new FormBody.Builder()
 					.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
@@ -234,11 +257,12 @@ public class LiveTool6 {
 										.build();
 		int receiveId;
 		Map<String, Object> taskInfoMap;
+		Map<String, Object> infoMap;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 		while(true){
 			Response infoResponse = client.newCall(infoRequest).execute();
 			//response body见info-response.json
-			Map<String, Object> infoMap = mapper.readValue(infoResponse.body().string(), new TypeReference<>(){});
+			infoMap = mapper.readValue(infoResponse.body().string(), new TypeReference<>(){});
 			taskInfoMap = (Map<String, Object>) ((Map<String, Object>) infoMap.get("data")).get("task_info");
 			receiveId=(int)taskInfoMap.get("receive_id");
 			if(receiveId==0){
@@ -251,6 +275,23 @@ public class LiveTool6 {
 		int actId=(int)groupListMap.get("act_id");
 		int bodyTaskId=(int)groupListMap.get("task_id");
 		int groupId=(int)groupListMap.get("group_id");
+        act_name = URLEncoder.encode((String) ((Map<String, Object>)((Map<String, Object>) infoMap.get("data")).get("act_info")).get("act_name"));
+        task_name = URLEncoder.encode((String) taskInfoMap.get("task_name"));
+        reward_name = URLEncoder.encode((String) ((Map<String, Object>) taskInfoMap.get("reward_info")).get("reward_name"));
+        System.out.println(act_name);
+        System.out.println(task_name);
+        System.out.println(reward_name);
+		prizeName = URLDecoder.decode(reward_name);
+		System.out.println(URLDecoder.decode(act_name));
+        System.out.println(URLDecoder.decode(task_name));
+        System.out.println(URLDecoder.decode(reward_name));
+		configmap.put("act_name",URLDecoder.decode(act_name));
+		configmap.put("task_name",URLDecoder.decode(task_name));
+		configmap.put("reward_name",URLDecoder.decode(reward_name));
+		String newconfigjson = JSON.toJSONString(config);
+		config.put(wj,newconfigjson);
+		String newconfig = JSON.toJSONString(config);
+		writeFile(f,newconfig,true);
 
 		//2.领取条件满足后，脚本触发，CPU使用率会接近100%
 		System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
@@ -321,7 +362,11 @@ public class LiveTool6 {
 		Thread.sleep(2*1000); //等待所有线程执行完毕
 		if(key==null){
 			System.out.println("奖品已被领完，抢奖品失败");
-		}else{System.out.printf("抢奖品成功,获得【%s】,兑换码【%s】\n",prizeName,key);}
+		}else{
+			String dhm = "【"+prizeName+"】 " + key;
+			writeFile("dhm.txt",dhm,false);
+			System.out.printf("抢奖品成功,获得【%s】,兑换码【%s】\n",prizeName,key);
+		}
 		System.exit(1);
 	}
 }
