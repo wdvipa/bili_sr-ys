@@ -16,10 +16,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
-public class LiveTool_X1 {
+public class LiveTool5 {
     //【每次启动前都要配置最新的cookie和csrf，否则可能有bug】
     private static String f = "config.json";
-    private static String wj = "x1";
+    private static String wj = "5";
     private static String taskId="";
     private static String act_name="";
     private static String task_name="";

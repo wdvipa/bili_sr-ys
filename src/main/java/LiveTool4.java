@@ -16,16 +16,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
-public class LiveTool_X1 {
+public class LiveTool4 {
     //【每次启动前都要配置最新的cookie和csrf，否则可能有bug】
     private static String f = "config.json";
-    private static String wj = "x1";
+    private static String wj = "4";
     private static String taskId="";
     private static String act_name="";
     private static String task_name="";
     private static String reward_name="";
+    private static boolean rw=true;
     private static String COOKIE;
+    private static String COOKIE2;
+    private static String COOKIE3;
     private static String CSRF;
+    private static String CSRF2;
+    private static String CSRF3;
+
+    private static String roomid = "23860299";
     private static String value = "";
     private static String refresh_csrf;
     private static String ac_time_value;
@@ -100,8 +107,11 @@ public class LiveTool_X1 {
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
+            COOKIE2= (String) config.get("cookie2");
+            COOKIE3= (String) config.get("cookie3");
             debug=Integer.parseInt(config.get("debug").toString());
             ac_time_value = (String) config.get("ac_time_value");
+            roomid = (String) config.get("roomid");
             taskId = (String) configmap.get("taskId");
             interval = Integer.parseInt(configmap.get("interval").toString());
             Map<String, Object> time = (Map<String, Object>) configmap.get("time");
@@ -118,7 +128,11 @@ public class LiveTool_X1 {
                 .build();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> cookiemap = cookieToMap(COOKIE);
+        Map<String, String> cookie2map = cookieToMap(COOKIE2);
+        Map<String, String> cookie3map = cookieToMap(COOKIE3);
         CSRF = cookiemap.get("bili_jct");
+        CSRF2 = cookie2map.get("bili_jct");
+        CSRF3 = cookie3map.get("bili_jct");
         System.out.println("获取到task_id:" + taskId);
         System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
@@ -162,6 +176,7 @@ public class LiveTool_X1 {
         Response refreshRes = client.newCall(getrefresh).execute();
         Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
         boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
+        refresh = false;
         if(refresh=true) {
             System.out.println("更新cookie...");
             String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
@@ -202,8 +217,7 @@ public class LiveTool_X1 {
                     .addHeader("Cookie", COOKIE)
                     .build();
             Response refreshResponse = client.newCall(refreshRequest).execute();
-            Map<String, Object> refreshMap = mapper.readValue(refreshResponse.body().string(), new TypeReference<>() {
-            });
+            Map<String, Object> refreshMap = mapper.readValue(refreshResponse.body().string(), new TypeReference<>() {});
             String newrefresh_token = (String) ((Map<String, Object>) refreshMap.get("data")).get("refresh_token");
             System.out.println(newrefresh_token);
             if (refreshResponse.isSuccessful()) {//response 请求成功
@@ -248,6 +262,55 @@ public class LiveTool_X1 {
                 System.out.println("发生错误:" + confirmMap.get("message"));
             }
         }
+
+        System.out.println("正在完成任务要求 弹幕*6...");
+        if(rw=true) {
+            int i = 0;
+            String msg = "1";
+            //防止拦截,发送8条
+            while(i<8) {
+                i = i+1;
+                String rnd = String.valueOf((long) ((Math.random() * 9.0 + 1) * (Math.pow(10, 10 - 1))));
+                FormBody senddmBody = new FormBody.Builder()
+                        .add("msg", msg) //去除csrf中的id字段
+                        .add("roomid", roomid)
+                        .add("csrf", CSRF2)
+                        .add("csrf_token", CSRF2)
+                        .add("rnd", rnd)
+                        .add("color", "16777215")
+                        .add("fontsize", "25")
+                        .build();
+                Request senddmRequest = new Request.Builder()
+                        .url("https://api.live.bilibili.com/msg/send")
+                        .post(senddmBody)
+                        .addHeader("Cookie", COOKIE2)
+                        .build();
+                Response senddmResponse = client.newCall(senddmRequest).execute();
+                Map<String, Object> senddmMap = mapper.readValue(senddmResponse.body().string(), new TypeReference<>() {});
+                System.out.println("账号1：已发送第"+i+"/8条弹幕：" + msg +",更换账号发送下一条...");
+                i = i+1;
+                String rnd2 = String.valueOf((long) ((Math.random() * 9.0 + 1) * (Math.pow(10, 10 - 1))));
+                FormBody senddm2Body = new FormBody.Builder()
+                        .add("msg", msg) //去除csrf中的id字段
+                        .add("roomid", roomid)
+                        .add("csrf", CSRF3)
+                        .add("csrf_token", CSRF3)
+                        .add("rnd", rnd2)
+                        .add("color", "16777215")
+                        .add("fontsize", "25")
+                        .build();
+                Request senddm2Request = new Request.Builder()
+                        .url("https://api.live.bilibili.com/msg/send")
+                        .post(senddm2Body)
+                        .addHeader("Cookie", COOKIE3)
+                        .build();
+                Response senddm2Response = client.newCall(senddm2Request).execute();
+                Map<String, Object> senddm2Map = mapper.readValue(senddm2Response.body().string(), new TypeReference<>() {});
+                System.out.println("账号2：已发送第"+i+"/8条弹幕：" + msg +",等待2秒后发送下一条...");
+                Thread.sleep(2000);
+            }
+        }
+
 
         System.out.println("等待领取条件满足...");
         String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);

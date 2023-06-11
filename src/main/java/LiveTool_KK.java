@@ -16,10 +16,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
-public class LiveTool6 {
+public class LiveTool_KK {
 	//【每次启动前都要配置最新的cookie和csrf，否则可能有bug】
 	private static String f = "config.json";
-	private static String wj = "6";
+	private static String wj = "kk";
 	private static String taskId="";
 	private static String act_name="";
 	private static String task_name="";
@@ -253,10 +253,10 @@ public class LiveTool6 {
 		System.out.println("等待领取条件满足...");
 		String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);
 		Request infoRequest =new Request.Builder()
-										.url(infoUrl)
-										.get()
-										.addHeader("Cookie", COOKIE)
-										.build();
+				.url(infoUrl)
+				.get()
+				.addHeader("Cookie", COOKIE)
+				.build();
 		int receiveId;
 		Map<String, Object> taskInfoMap;
 		Map<String, Object> infoMap;
@@ -277,16 +277,16 @@ public class LiveTool6 {
 		int actId=(int)groupListMap.get("act_id");
 		int bodyTaskId=(int)groupListMap.get("task_id");
 		int groupId=(int)groupListMap.get("group_id");
-        act_name = URLEncoder.encode((String) ((Map<String, Object>)((Map<String, Object>) infoMap.get("data")).get("act_info")).get("act_name"));
-        task_name = URLEncoder.encode((String) taskInfoMap.get("task_name"));
-        reward_name = URLEncoder.encode((String) ((Map<String, Object>) taskInfoMap.get("reward_info")).get("reward_name"));
-        System.out.println(act_name);
-        System.out.println(task_name);
-        System.out.println(reward_name);
+		act_name = URLEncoder.encode((String) ((Map<String, Object>)((Map<String, Object>) infoMap.get("data")).get("act_info")).get("act_name"));
+		task_name = URLEncoder.encode((String) taskInfoMap.get("task_name"));
+		reward_name = URLEncoder.encode((String) ((Map<String, Object>) taskInfoMap.get("reward_info")).get("reward_name"));
+		System.out.println(act_name);
+		System.out.println(task_name);
+		System.out.println(reward_name);
 		prizeName = URLDecoder.decode(reward_name);
 		System.out.println(URLDecoder.decode(act_name));
-        System.out.println(URLDecoder.decode(task_name));
-        System.out.println(URLDecoder.decode(reward_name));
+		System.out.println(URLDecoder.decode(task_name));
+		System.out.println(URLDecoder.decode(reward_name));
 		((Map<String, Object>) config.get(wj)).put("act_name",URLDecoder.decode(act_name));
 		((Map<String, Object>) config.get(wj)).put("task_name",URLDecoder.decode(task_name));
 		((Map<String, Object>) config.get(wj)).put("reward_name",URLDecoder.decode(reward_name));
@@ -296,21 +296,21 @@ public class LiveTool6 {
 		//2.领取条件满足后，脚本触发，CPU使用率会接近100%
 		System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
 		FormBody clickBody =new FormBody.Builder()
-										.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
-										.add("act_id", String.valueOf(actId))
-										.add("task_id", String.valueOf(bodyTaskId))
-										.add("group_id", String.valueOf(groupId))
-										.add("receive_id", String.valueOf(receiveId))
-										.add("receive_from","missionPage")
-										.add("act_name", act_name)
-										.add("task_name", task_name)
-										.add("reward_name", reward_name)
-										.build();
+				.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
+				.add("act_id", String.valueOf(actId))
+				.add("task_id", String.valueOf(bodyTaskId))
+				.add("group_id", String.valueOf(groupId))
+				.add("receive_id", String.valueOf(receiveId))
+				.add("receive_from","missionPage")
+				.add("act_name", act_name)
+				.add("task_name", task_name)
+				.add("reward_name", reward_name)
+				.build();
 		Request clickRequest=new Request.Builder()
-										.url("https://api.bilibili.com/x/activity/mission/task/reward/receive")
-										.post(clickBody)
-										.addHeader("Cookie",COOKIE)
-										.build();
+				.url("https://api.bilibili.com/x/activity/mission/task/reward/receive")
+				.post(clickBody)
+				.addHeader("Cookie",COOKIE)
+				.build();
 		AtomicInteger requestCount = new AtomicInteger();
 		while(!end){
 			new Thread(()->{
