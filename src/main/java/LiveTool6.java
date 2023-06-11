@@ -124,7 +124,7 @@ public class LiveTool6 {
 		//1.等待领取条件满足
 		SimpleDateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss");
 		System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
-		int a=1;
+		int a=0;
 		while(a==1) {
 			Date curTime1 = new Date();
 			if (curTime1.getHours() == 17) {
@@ -159,7 +159,7 @@ public class LiveTool6 {
 				.build();
 		Response refreshRes = client.newCall(getrefresh).execute();
 		Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
-		boolean refresh = Boolean.parseBoolean((String) ((Map<String, Object>) refMap.get("data")).get("refresh"));
+		boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
 		if(refresh=true) {
 			System.out.println("更新cookie...");
 			String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
@@ -212,7 +212,6 @@ public class LiveTool6 {
 					String s = c.split(";")[0];
 					cc = cc + s + ";";
 				}
-				System.out.println(cc);
 				Map<String, String> ccmap = cookieToMap(cc);
 				//String cookiejson = JSON.toJSONString(cookiemap);
 				//JSONObject jsonObject = JSONObject.parseObject(cookiejson);
@@ -226,7 +225,7 @@ public class LiveTool6 {
 			config.put("cookie", newcookie);
 			config.put("ac_time_value", newrefresh_token);
 			String newconfig = JSON.toJSONString(config);
-			writeFile(f,newconfig,true);
+			writeFile(f,newconfig,false);
 
 			FormBody confirmBody = new FormBody.Builder()
 					.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
@@ -240,8 +239,8 @@ public class LiveTool6 {
 			Response confirmResponse = client.newCall(confirmRequest).execute();
 			Map<String, Object> confirmMap = mapper.readValue(confirmResponse.body().string(), new TypeReference<>() {
 			});
-			String code = (String) confirmMap.get("code");
-			if (code == "0") {
+			int code = (int) confirmMap.get("code");
+			if (code == 0) {
 				System.out.println("刷新cookie和CSRF成功");
 			} else {
 				System.out.println("发生错误:" + confirmMap.get("message"));
@@ -288,10 +287,10 @@ public class LiveTool6 {
 		configmap.put("act_name",URLDecoder.decode(act_name));
 		configmap.put("task_name",URLDecoder.decode(task_name));
 		configmap.put("reward_name",URLDecoder.decode(reward_name));
-		String newconfigjson = JSON.toJSONString(config);
+		String newconfigjson = JSON.toJSONString(configmap);
 		config.put(wj,newconfigjson);
 		String newconfig = JSON.toJSONString(config);
-		writeFile(f,newconfig,true);
+		writeFile(f,newconfig,false);
 
 		//2.领取条件满足后，脚本触发，CPU使用率会接近100%
 		System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
@@ -364,7 +363,7 @@ public class LiveTool6 {
 			System.out.println("奖品已被领完，抢奖品失败");
 		}else{
 			String dhm = "【"+prizeName+"】 " + key;
-			writeFile("dhm.txt",dhm,false);
+			writeFile("dhm.txt",dhm,true);
 			System.out.printf("抢奖品成功,获得【%s】,兑换码【%s】\n",prizeName,key);
 		}
 		System.exit(1);
