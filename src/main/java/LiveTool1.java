@@ -92,11 +92,7 @@ public class LiveTool1 {
         }
     }
 
-    @SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
-    public static void main(String[] args) throws IOException,InterruptedException{
-        //String fileName = "src/main/resources/config.json";
-        Map<String, Object> config = readJsonFile(f);
-        Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+    public static void readconfig (Map<String, Object> config,Map<String, Object> configmap){
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
@@ -112,6 +108,16 @@ public class LiveTool1 {
         }else{
             System.out.println("config.json配置文件错误或不存在");
         }
+    }
+
+
+    @SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
+    public static void main(String[] args) throws IOException,InterruptedException{
+        //String fileName = "src/main/resources/config.json";
+        Map<String, Object> config = readJsonFile(f);
+        Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
 
         OkHttpClient client=new OkHttpClient.Builder()
                 .readTimeout(1, TimeUnit.MINUTES)
@@ -129,13 +135,13 @@ public class LiveTool1 {
         System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
         while(debug==1) {
             Date curTime1 = new Date();
-            if (curTime1.getHours() == 17) {
+            if (curTime1.getHours() == hours) {
                 while(debug==1) {
                     Date curTime3 = new Date();
-                    if (curTime3.getMinutes() == 13) {
+                    if (curTime3.getMinutes() == Minutes) {
                         while(debug==1) {
                             Date curTime4 = new Date();
-                            if (curTime4.getSeconds() == 15) {
+                            if (curTime4.getSeconds() == Seconds) {
                                 debug=0;
                             } else {
                                 System.out.println(dateFormat1.format(new Date()) + "秒不满足");
@@ -153,6 +159,11 @@ public class LiveTool1 {
             }
         }
 
+        config = readJsonFile(f);
+        configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
+
         String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
         Request getrefresh =new Request.Builder()
                 .url(refreshUrl)
@@ -162,7 +173,6 @@ public class LiveTool1 {
         Response refreshRes = client.newCall(getrefresh).execute();
         Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
         boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
-        refresh = false;
         if(refresh=true) {
             System.out.println("更新cookie...");
             String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
@@ -292,6 +302,10 @@ public class LiveTool1 {
         ((Map<String, Object>) config.get(wj)).put("reward_name",URLDecoder.decode(reward_name));
         String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
         writeFile(f,newconfig,false);
+        config = readJsonFile(f);
+        configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
 
         //2.领取条件满足后，脚本触发，CPU使用率会接近100%
         System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));

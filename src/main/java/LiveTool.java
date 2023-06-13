@@ -92,11 +92,7 @@ public class LiveTool {
         }
     }
 
-    @SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
-    public static void main(String[] args) throws IOException,InterruptedException{
-        //String fileName = "src/main/resources/config.json";
-        Map<String, Object> config = readJsonFile(f);
-        Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+    public static void readconfig (Map<String, Object> config,Map<String, Object> configmap){
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
@@ -112,6 +108,15 @@ public class LiveTool {
         }else{
             System.out.println("config.json配置文件错误或不存在");
         }
+    }
+
+    @SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
+    public static void main(String[] args) throws IOException,InterruptedException{
+        //String fileName = "src/main/resources/config.json";
+        Map<String, Object> config = readJsonFile(f);
+        Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
 
         OkHttpClient client=new OkHttpClient.Builder()
                 .readTimeout(1, TimeUnit.MINUTES)
@@ -129,13 +134,13 @@ public class LiveTool {
         System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
         while(debug==1) {
             Date curTime1 = new Date();
-            if (curTime1.getHours() == 17) {
+            if (curTime1.getHours() == hours) {
                 while(debug==1) {
                     Date curTime3 = new Date();
-                    if (curTime3.getMinutes() == 13) {
+                    if (curTime3.getMinutes() == Minutes) {
                         while(debug==1) {
                             Date curTime4 = new Date();
-                            if (curTime4.getSeconds() == 15) {
+                            if (curTime4.getSeconds() == Seconds) {
                                 debug=0;
                             } else {
                                 System.out.println(dateFormat1.format(new Date()) + "秒不满足");
@@ -144,14 +149,19 @@ public class LiveTool {
                         }
                     } else {
                         System.out.println(dateFormat1.format(new Date()) + "分钟不满足");
-                        TimeUnit.SECONDS.sleep(30);
+                        TimeUnit.SECONDS.sleep(5);
                     }
                 }
             } else{
                 System.out.println(dateFormat1.format(new Date()) + "小时不满足或超过时间");
-                TimeUnit.SECONDS.sleep(180);
+                TimeUnit.SECONDS.sleep(90);
             }
         }
+
+        config = readJsonFile(f);
+        configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
 
         String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
         Request getrefresh =new Request.Builder()
@@ -228,6 +238,10 @@ public class LiveTool {
             config.put("ac_time_value", newrefresh_token);
             String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
             writeFile(f,newconfig,false);
+            config = readJsonFile(f);
+            configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+            //↓判断配置是否存在,不存在则用全局配置
+            readconfig(config,configmap);
 
             FormBody confirmBody = new FormBody.Builder()
                     .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
@@ -282,7 +296,6 @@ public class LiveTool {
         System.out.println(act_name);
         System.out.println(task_name);
         System.out.println(reward_name);
-        prizeName = URLDecoder.decode(reward_name);
         System.out.println(URLDecoder.decode(act_name));
         System.out.println(URLDecoder.decode(task_name));
         System.out.println(URLDecoder.decode(reward_name));
@@ -333,7 +346,7 @@ public class LiveTool {
                         System.out.println("Success by "+Thread.currentThread().getName());
                         Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
                         key=((Map<String, String>)dataMap.get("extra")).get("cdkey_content");
-                        prizeName=(String)dataMap.get("name");
+                        prizeName = URLDecoder.decode(reward_name);
                         end=true;
                     }else if(message.equals("请求过于频繁，请稍后再试")){
                         //Response: {"code":-509,"message":"请求过于频繁，请稍后再试","ttl":1}

@@ -129,13 +129,13 @@ public class LiveTool3 {
         System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
         while(debug==1) {
             Date curTime1 = new Date();
-            if (curTime1.getHours() == 17) {
+            if (curTime1.getHours() == hours) {
                 while(debug==1) {
                     Date curTime3 = new Date();
-                    if (curTime3.getMinutes() == 13) {
+                    if (curTime3.getMinutes() == Minutes) {
                         while(debug==1) {
                             Date curTime4 = new Date();
-                            if (curTime4.getSeconds() == 15) {
+                            if (curTime4.getSeconds() == Seconds) {
                                 debug=0;
                             } else {
                                 System.out.println(dateFormat1.format(new Date()) + "秒不满足");

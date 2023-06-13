@@ -92,6 +92,25 @@ public class LiveTool6 {
 		}
 	}
 
+	public static void readconfig (Map<String, Object> config,Map<String, Object> configmap){
+		//↓判断配置是否存在,不存在则用全局配置
+		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
+			COOKIE= (String) config.get("cookie");
+			debug=Integer.parseInt(config.get("debug").toString());
+			ac_time_value = (String) config.get("ac_time_value");
+			taskId = (String) configmap.get("taskId");
+			interval = Integer.parseInt(configmap.get("interval").toString());
+			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
+			hours = Integer.parseInt(time.get("h").toString());
+			Minutes = Integer.parseInt(time.get("m").toString());
+			Seconds = Integer.parseInt(time.get("s").toString());
+			//更改变量为config配置
+		}else{
+			System.out.println("config.json配置文件错误或不存在");
+		}
+	}
+
+
 	@SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
 	public static void main(String[] args) throws IOException,InterruptedException{
 		//String fileName = "src/main/resources/config.json";
@@ -129,13 +148,13 @@ public class LiveTool6 {
 		System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
 		while(debug==1) {
 			Date curTime1 = new Date();
-			if (curTime1.getHours() == 17) {
+			if (curTime1.getHours() == hours) {
 				while(debug==1) {
 					Date curTime3 = new Date();
-					if (curTime3.getMinutes() == 13) {
+					if (curTime3.getMinutes() == Minutes) {
 						while(debug==1) {
 							Date curTime4 = new Date();
-							if (curTime4.getSeconds() == 15) {
+							if (curTime4.getSeconds() == Seconds) {
 								debug=0;
 							} else {
 								System.out.println(dateFormat1.format(new Date()) + "秒不满足");
@@ -152,6 +171,11 @@ public class LiveTool6 {
 				TimeUnit.SECONDS.sleep(180);
 			}
 		}
+
+		config = readJsonFile(f);
+		configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+		//↓判断配置是否存在,不存在则用全局配置
+		readconfig(config,configmap);
 
 		String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
 		Request getrefresh =new Request.Builder()
@@ -292,6 +316,10 @@ public class LiveTool6 {
 		((Map<String, Object>) config.get(wj)).put("reward_name",URLDecoder.decode(reward_name));
 		String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
 		writeFile(f,newconfig,false);
+		config = readJsonFile(f);
+		configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+		//↓判断配置是否存在,不存在则用全局配置
+		readconfig(config,configmap);
 
 		//2.领取条件满足后，脚本触发，CPU使用率会接近100%
 		System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
