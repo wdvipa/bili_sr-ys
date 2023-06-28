@@ -1,33 +1,39 @@
 {
 	"debug":"1",
 	"roomid":"23860299",
-	"cookie":"LIVE_BUVID=AUTO3916682294018630;bili_jct=e81406c0a1fc18279fc36dd7ffbfc604;PVID=1;innersign=0;header_theme_version=CLOSE;browser_resolution=1865-968;DedeUserID__ckMd5=057d2bff43481fec;sid=5c1qxf3l;CURRENT_FNVAL=4048;fingerprint=73e12c1dbc39d03674bb0b1b48abc0f0;home_feed_column=5;b_nut=100;bp_video_offset_353379484=805811636554170400;_uuid=1A4C825B-D6BF-FEC3-5771-1619103E2F8B101364infoc;i-wanna-go-back=-1;buvid_fp_plain=undefined;b_ut=5;buvid4=385999FF-F00E-FCF1-2CFF-942D7587788502119-022111213-nt%2F2CNKonVDGnoJJh55wBA%3D%3D;DedeUserID=353379484;FEED_LIVE_VERSION=V8;buvid_fp=9b3511d338f56433e4e369c7a8460518;buvid3=5320AA04-B7C0-4AA7-B09F-05725C2B157C167644infoc;b_lsid=7339D4D2_188A9AC18E0;rpdid=|(u)~mmuu~uY0J'uY~Jl)~JY|;SESSDATA=d61f125a%2C1702137693%2C847c7%2A62;",
-	"cookie2":"_uuid=2D428918-D2DE-8351-C9310-B108F77B3ED1881621infoc; buvid3=A8746168-45A3-C4A0-9994-068AE5FA361383926infoc; b_nut=1658932985; i-wanna-go-back=-1; CURRENT_FNVAL=4048; rpdid=|(u)~mmuu~uY0J'uY~Jl)YRkR; b_ut=5; buvid4=F9C68734-EDEC-D59C-EA7A-337638B9C0B983926-022072722-nt%2F2CNKonVDiUmFOF33kMg%3D%3D; DedeUserID=238713582; DedeUserID__ckMd5=12cea47d60608eaa; LIVE_BUVID=AUTO5916750543516254; buvid_fp_plain=undefined; header_theme_version=CLOSE; home_feed_column=5; FEED_LIVE_VERSION=V8; fingerprint=3d81c3c5d7d4725fd1e689257136ef8d; buvid_fp=3d81c3c5d7d4725fd1e689257136ef8d; browser_resolution=1865-936; SESSDATA=79eb9ba4%2C1701439400%2C666f5%2A62; bili_jct=8a5cc802f29dea84398dc55ca9709671; bp_video_offset_238713582=805409472987005000; PVID=3; b_lsid=58107573E_188A99C1D4F",
-	"cookie3":"i-wanna-go-back=-1; buvid3=787D8FDE-B2D2-4F28-BAE6-A3C1077C78DE148797infoc; b_nut=1638076199; buvid_fp=e78944bbe3328f144ae067136a208a4a; CURRENT_BLACKGAP=0; CURRENT_FNVAL=4048; fingerprint=e78944bbe3328f144ae067136a208a4a; buvid_fp_plain=undefined; blackside_state=0; PVID=4; buvid4=50B12178-CE6B-252D-6D68-7B97A9F8395E30335-022012511-nt%2F2CNKonVBoS3WxE6jcIw%3D%3D; LIVE_BUVID=AUTO6816543038182990; hit-dyn-v2=1; _uuid=F1103BA102-18710-37DA-FCBA-F918D494379432859infoc; rpdid=|(u)~mmuu~uY0J'uY~J|~~YJl; SESSDATA=d5a4e06e%2C1701917214%2C863ab%2A62; bili_jct=00a5426d27528431f7b176c0f3c3bbe1; DedeUserID=2104688150; DedeUserID__ckMd5=3bc7d30df80bf99e; header_theme_version=CLOSE; home_feed_column=5; FEED_LIVE_VERSION=V_SIDE_CARD_REFRESH; browser_resolution=1920-668; sid=ow1mn84e; b_ut=5; b_lsid=86C923F10_188A94803D1; innersign=0",
-	"ac_time_value":"a8fa37efdc4505e784507029e501c862",
+	"ruid":"353379484",
+	"cookie":"buvid3=853068D5-06E4-7E05-3EAE-2D0827F8342584496infoc; b_nut=1687094984; i-wanna-go-back=-1; b_ut=7; _uuid=7F633CB2-85BA-B3D1-89AF-9B2E1102C1095E85096infoc; FEED_LIVE_VERSION=V8; home_feed_column=5; buvid_fp=ab56e1738e64ea2cff8b07d7db722b28; buvid4=385999FF-F00E-FCF1-2CFF-942D7587788502119-022111213-nt%2F2CNKonVDGnoJJh55wBA%3D%3D; DedeUserID=353379484; DedeUserID__ckMd5=057d2bff43481fec; CURRENT_FNVAL=4048; header_theme_version=CLOSE; LIVE_BUVID=AUTO5316871828722085; PVID=1; SESSDATA=11fa1d96%2C1703252834%2Ca990c%2A62lpFGRs3AEzZGnFLpc6tGPUOvNO8kFU7OXih5MJ11hfkwwixvPUgUEL075_puIvQ2wX4HRAAAVAA; bili_jct=b50707521840b1031dd0e2a3c4a38ce2; rpdid=|(u)~mmukmu)0J'uY)~)kYml|; innersign=0; b_lsid=4969EDA3_188FD761DA8; browser_resolution=1920-960; bp_video_offset_353379484=811924053619114100; sid=5figulg0",
+	"cookie2":"buvid3=3ECE15F5-6837-68BE-AC7D-DE0095B7BA2086746infoc; b_nut=1687095086; i-wanna-go-back=-1; _uuid=1AF2831E-C2E1-BAFE-DF10F-109BDFF1079F6E87472infoc; FEED_LIVE_VERSION=V8; buvid_fp=ab56e1738e64ea2cff8b07d7db722b28; home_feed_column=5; buvid4=8492F42E-5EF5-E1CD-2B15-ED9869DEF3D999601-022050302-nt%2F2CNKonVBoS3WxE6jcIw%3D%3D; header_theme_version=CLOSE; DedeUserID=238713582; DedeUserID__ckMd5=12cea47d60608eaa; CURRENT_FNVAL=4048; b_ut=5; LIVE_BUVID=AUTO6916870973026721; PVID=1; innersign=0; b_lsid=2D910C69A_188FD7525D0; browser_resolution=1920-928; SESSDATA=cc988576%2C1703431495%2C54fc1%2A626pUeFByvbVkH75iRumsw1KK6gL4EiMucsCopoNyELcnXH5lAnSR75lYSnpTDEdRHXGxRSwAAUgA; bili_jct=5147153c793a12d238661b50cadfbba5; sid=5b5fshcl; bp_video_offset_238713582=811924053619114100",
+	"cookie3":"buvid3=E4B0D7EE-F2C5-F91A-9A1C-D982EFEF419D81353infoc; b_nut=1687096981; i-wanna-go-back=-1; b_ut=7; _uuid=127D4A310-833D-98EF-41B4-CE7581DB87AC82129infoc; buvid_fp=78b68e218c9357d7ba7b111edefaaa47; buvid4=4E6DA973-7EB1-15E4-873F-F79C77A84E7282593-023061822-nt%2F2CNKonVBhZneJKgyFbg%3D%3D; FEED_LIVE_VERSION=V_SIDE_CARD_REFRESH; header_theme_version=CLOSE; home_feed_column=4; browser_resolution=1280-565; SESSDATA=08c6e70a%2C1703431646%2C3e80e%2A62Div3xITJ8wHPMZuCXkheO2eFC6meWfR6BDeet0HEM5fuM5-9rhJsZYVIKW610CZbjfiRxQAAMgA; bili_jct=7be26750abf58b887394fb8989c57d18; DedeUserID=2104688150; DedeUserID__ckMd5=3bc7d30df80bf99e; CURRENT_FNVAL=4048; LIVE_BUVID=AUTO5616870971547028; PVID=1; sid=5cel1yio; bp_video_offset_2104688150=811919535308275700; innersign=0; b_lsid=952777E5_188FD7774D4",
+	"ac_time_value":"7bd373a3a7684016d3702085a1e16e62",
+	"get":{
+		"ys":"2091",
+		"sr":"2139",
+		"srcj":"2046"
+	},
 	"lc":{
-		"taskId":"1545bfe2",
-		"interval":"10",
+		"taskId":"80799d68",
+		"interval":"1",
 		"time":{
 			"h":"23",
 			"m":"59",
-			"s":"59"
+			"s":"56"
 		},
 		"act_name":"星穹铁道1.1版本任务【直播】",
-		"task_name":"累计5天完成全部“每日直播任务”",
-		"reward_name":"星琼*660"
+		"task_name":"累计20天完成全部“每日直播任务”",
+		"reward_name":"星琼*1000"
 	},
 	"kk":{
-		"taskId":"a764543c",
-		"interval":"10",
+		"taskId":"8606f804",
+		"interval":"5",
 		"time":{
-			"h":"0",
-			"m":"0",
-			"s":"0"
+			"h":"1",
+			"m":"59",
+			"s":"56"
 		},
 		"act_name":"星穹铁道1.1版本任务【直播】",
-		"task_name":"限定主播累积5天开播",
-		"reward_name":"星琼*180"
+		"task_name":"限定主播累积14天开播",
+		"reward_name":"星轨通票*2"
 	},
 	"1":{
 		"taskId":"23268e79",
@@ -57,7 +63,7 @@
 		"taskId":"9712397d",
 		"interval":"1",
 		"time":{
-			"h":"0",
+			"h":"23",
 			"m":"59",
 			"s":"59"
 		},
@@ -69,9 +75,9 @@
 		"taskId":"e9a33442",
 		"interval":"10",
 		"time":{
-			"h":"0",
-			"m":"0",
-			"s":"10"
+			"h":"23",
+			"m":"59",
+			"s":"59"
 		},
 		"act_name":"星穹铁道1.1版本任务【直播】",
 		"task_name":"当日直播间弹幕数满6条",
@@ -79,9 +85,9 @@
 	},
 	"5":{
 		"taskId":"17009751",
-		"interval":"1",
+		"interval":"10",
 		"time":{
-			"h":"0",
+			"h":"23",
 			"m":"59",
 			"s":"59"
 		},
@@ -91,7 +97,7 @@
 	},
 	"6":{
 		"taskId":"c96e7d04",
-		"interval":"1",
+		"interval":"10",
 		"time":{
 			"h":"0",
 			"m":"9",

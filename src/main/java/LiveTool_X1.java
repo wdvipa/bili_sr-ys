@@ -164,7 +164,7 @@ public class LiveTool_X1 {
         boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
         if(refresh=true) {
             System.out.println("更新cookie...");
-            String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+            String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");
             Request getCorrespondPath = new Request.Builder()
                     .url(CPathapi)
                     .get()

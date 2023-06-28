@@ -100,10 +100,6 @@ public class LiveTool_KK {
 			ac_time_value = (String) config.get("ac_time_value");
 			taskId = (String) configmap.get("taskId");
 			interval = Integer.parseInt(configmap.get("interval").toString());
-			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
-			hours = Integer.parseInt(time.get("h").toString());
-			Minutes = Integer.parseInt(time.get("m").toString());
-			Seconds = Integer.parseInt(time.get("s").toString());
 			//更改变量为config配置
 		}else{
 			System.out.println("config.json配置文件错误或不存在");
@@ -118,9 +114,7 @@ public class LiveTool_KK {
 		Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
 		//↓判断配置是否存在,不存在则用全局配置
 		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
-			COOKIE= (String) config.get("cookie");
 			debug=Integer.parseInt(config.get("debug").toString());
-			ac_time_value = (String) config.get("ac_time_value");
 			taskId = (String) configmap.get("taskId");
 			interval = Integer.parseInt(configmap.get("interval").toString());
 			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
@@ -136,46 +130,20 @@ public class LiveTool_KK {
 				.readTimeout(1, TimeUnit.MINUTES)
 				.build();
 		ObjectMapper mapper = new ObjectMapper();
-		Map<String, String> cookiemap = cookieToMap(COOKIE);
-		CSRF = cookiemap.get("bili_jct");
 		System.out.println("获取到task_id:" + taskId);
 		System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
 		/*先验证领取条件的原因是，如果不满足领取条件，那么`infoUrl`的查询结果中的`receive_id`字段为0
 		  这是直播系统的一个安全措施，只有满足领取条件系统才会告诉你真正的`receive_id`*/
 		//1.等待领取条件满足
-		SimpleDateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss");
-		System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
-		while(debug==1) {
-			Date curTime1 = new Date();
-			if (curTime1.getHours() == hours) {
-				while(debug==1) {
-					Date curTime3 = new Date();
-					if (curTime3.getMinutes() == Minutes) {
-						while(debug==1) {
-							Date curTime4 = new Date();
-							if (curTime4.getSeconds() == Seconds) {
-								debug=0;
-							} else {
-								System.out.println(dateFormat1.format(new Date()) + "秒不满足");
-								Thread.sleep(500);
-							}
-						}
-					} else {
-						System.out.println(dateFormat1.format(new Date()) + "分钟不满足");
-						TimeUnit.SECONDS.sleep(30);
-					}
-				}
-			} else{
-				System.out.println(dateFormat1.format(new Date()) + "小时不满足或超过时间");
-				TimeUnit.SECONDS.sleep(180);
-			}
-		}
+		FFL.timeing(debug,hours,Minutes,Seconds);
 
 		config = readJsonFile(f);
 		configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
 		//↓判断配置是否存在,不存在则用全局配置
 		readconfig(config,configmap);
+		Map<String, String> cookiemap = cookieToMap(COOKIE);
+		CSRF = cookiemap.get("bili_jct");
 
 		String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
 		Request getrefresh =new Request.Builder()
@@ -186,10 +154,10 @@ public class LiveTool_KK {
 		Response refreshRes = client.newCall(getrefresh).execute();
 		Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
 		boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
-		refresh = false;
-		if(refresh=true) {
+		refresh=false;
+		if(refresh) {
 			System.out.println("更新cookie...");
-			String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+			String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");
 			Request getCorrespondPath = new Request.Builder()
 					.url(CPathapi)
 					.get()
@@ -362,7 +330,7 @@ public class LiveTool_KK {
 						System.out.println("Success by "+Thread.currentThread().getName());
 						Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
 						key=((Map<String, String>)dataMap.get("extra")).get("cdkey_content");
-						prizeName=(String)dataMap.get("name");
+						prizeName = URLDecoder.decode(reward_name);
 						end=true;
 					}else if(message.equals("请求过于频繁，请稍后再试")){
 						//Response: {"code":-509,"message":"请求过于频繁，请稍后再试","ttl":1}

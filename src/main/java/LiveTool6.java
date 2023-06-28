@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
@@ -27,7 +26,6 @@ public class LiveTool6 {
 	private static String COOKIE;
 	private static String CSRF;
 	private static String value = "";
-	private static String refresh_csrf;
 	private static String ac_time_value;
 	private static int debug = 0;
 	private static int hours=1;
@@ -40,6 +38,10 @@ public class LiveTool6 {
 	static String key = null;
 	static String prizeName = null;
 	static boolean satisfied=true; //**脚本运行前**领取条件是否满足
+	static OkHttpClient client=new OkHttpClient.Builder()
+			.readTimeout(1, TimeUnit.MINUTES)
+			.build();
+	static ObjectMapper mapper = new ObjectMapper();
 
 	public static Map<String,String> cookieToMap(String value) {
 		Map<String, String> map = new HashMap<String, String>();
@@ -109,41 +111,7 @@ public class LiveTool6 {
 			System.out.println("config.json配置文件错误或不存在");
 		}
 	}
-
-
-	@SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
-	public static void main(String[] args) throws IOException,InterruptedException{
-		//String fileName = "src/main/resources/config.json";
-		Map<String, Object> config = readJsonFile(f);
-		Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
-		//↓判断配置是否存在,不存在则用全局配置
-		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
-			COOKIE= (String) config.get("cookie");
-			debug=Integer.parseInt(config.get("debug").toString());
-			ac_time_value = (String) config.get("ac_time_value");
-			taskId = (String) configmap.get("taskId");
-			interval = Integer.parseInt(configmap.get("interval").toString());
-			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
-			hours = Integer.parseInt(time.get("h").toString());
-			Minutes = Integer.parseInt(time.get("m").toString());
-			Seconds = Integer.parseInt(time.get("s").toString());
-			//更改变量为config配置
-		}else{
-			System.out.println("config.json配置文件错误或不存在");
-		}
-
-		OkHttpClient client=new OkHttpClient.Builder()
-				.readTimeout(1, TimeUnit.MINUTES)
-				.build();
-		ObjectMapper mapper = new ObjectMapper();
-		Map<String, String> cookiemap = cookieToMap(COOKIE);
-		CSRF = cookiemap.get("bili_jct");
-		System.out.println("获取到task_id:" + taskId);
-		System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
-
-		/*先验证领取条件的原因是，如果不满足领取条件，那么`infoUrl`的查询结果中的`receive_id`字段为0
-		  这是直播系统的一个安全措施，只有满足领取条件系统才会告诉你真正的`receive_id`*/
-		//1.等待领取条件满足
+	public static void timeing(int hours,int Minutes,int Seconds) throws InterruptedException {
 		SimpleDateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss");
 		System.out.println("["+dateFormat1.format(new Date())+"] 脚本将在" + hours + ":" + Minutes + ":" + Seconds + "时开始执行...");
 		while(debug==1) {
@@ -171,50 +139,56 @@ public class LiveTool6 {
 				TimeUnit.SECONDS.sleep(180);
 			}
 		}
+	}
+
+
+	@SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
+	public static void main(String[] args) throws IOException,InterruptedException{
+		//String fileName = "src/main/resources/config.json";
+		Map<String, Object> config = readJsonFile(f);
+		Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+		//↓判断配置是否存在,不存在则用全局配置
+		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
+			COOKIE= (String) config.get("cookie");
+			debug=Integer.parseInt(config.get("debug").toString());
+			ac_time_value = (String) config.get("ac_time_value");
+			taskId = (String) configmap.get("taskId");
+			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
+			hours = Integer.parseInt(time.get("h").toString());
+			Minutes = Integer.parseInt(time.get("m").toString());
+			Seconds = Integer.parseInt(time.get("s").toString());
+			//更改变量为config配置
+		}else{
+			System.out.println("config.json配置文件错误或不存在");
+		}
+
+		System.out.println("获取到task_id:" + taskId);
+		System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
+
+		/*先验证领取条件的原因是，如果不满足领取条件，那么`infoUrl`的查询结果中的`receive_id`字段为0
+		  这是直播系统的一个安全措施，只有满足领取条件系统才会告诉你真正的`receive_id`*/
+		//1.等待领取条件满足
+		timeing(hours,Minutes,Seconds);
 
 		config = readJsonFile(f);
 		configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
 		//↓判断配置是否存在,不存在则用全局配置
 		readconfig(config,configmap);
+		Map<String, String> cookiemap = cookieToMap(COOKIE);
+		CSRF = cookiemap.get("bili_jct");
 
-		String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
-		Request getrefresh =new Request.Builder()
-				.url(refreshUrl)
-				.get()
-				.addHeader("Cookie", COOKIE)
-				.build();
-		Response refreshRes = client.newCall(getrefresh).execute();
-		Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
-		boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
+		boolean refresh = FFL.refrefrsh(COOKIE);
 		refresh = false;
-		if(refresh=true) {
+		if(refresh) {
 			System.out.println("更新cookie...");
-			String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
-			Request getCorrespondPath = new Request.Builder()
-					.url(CPathapi)
-					.get()
-					.build();
-			Response CPResponse = client.newCall(getCorrespondPath).execute();
-			Map<String, Object> CPMap = mapper.readValue(CPResponse.body().string(), new TypeReference<>() {
-			});
-			String CorrespondPath = (String) CPMap.get("CorrespondPath");
+			String CorrespondPath = FFL.getCorrespondPath();
 			System.out.println("CorrespondPath:" + CorrespondPath);
 
-			String csrfUrl = String.format("https://www.bilibili.com/correspond/1/%s", CorrespondPath);
-			Request getcsrf = new Request.Builder()
-					.url(csrfUrl)
-					.get()
-					.addHeader("Cookie", COOKIE)
-					.build();
-			Response csrfResponse = client.newCall(getcsrf).execute();
-			String csrfbady = csrfResponse.body().string();
-			Matcher CSRFZZ = Pattern.compile("(?<=id=\"1-name\">).*(?=</div><div)").matcher(csrfbady);
-			while (CSRFZZ.find()) {
-				refresh_csrf = CSRFZZ.group();
-				System.out.println(CSRFZZ.group());
-			}
-			CSRF = cookiemap.get("bili_jct");
+			String refresh_csrf = FFL.getrefresh_csrf(COOKIE,CorrespondPath);
+			System.out.println("refresh_csrf:" + refresh_csrf);
+
 			String refresh_token = ac_time_value;
+			String url = "https://passport.bilibili.com/x/passport-login/web/cookie/refresh?csrf="+CSRF.split("&")[0]+"&refresh_csrf="+refresh_csrf+"&source=main_web&refresh_token="+refresh_token;
 			FormBody refreshBody = new FormBody.Builder()
 					.add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
 					.add("refresh_csrf", refresh_csrf)
@@ -222,7 +196,7 @@ public class LiveTool6 {
 					.add("refresh_token", refresh_token)
 					.build();
 			Request refreshRequest = new Request.Builder()
-					.url("https://passport.bilibili.com/x/passport-login/web/cookie/refresh")
+					.url(url)
 					.post(refreshBody)
 					.addHeader("Cookie", COOKIE)
 					.build();
@@ -295,7 +269,7 @@ public class LiveTool6 {
 				satisfied=false;
 				System.out.println(dateFormat.format(new Date())+"领取条件仍不满足");
 			}else{break;}
-			Thread.sleep(60000); //一秒查询一次领取条件是否满足
+			Thread.sleep(500); //一秒查询一次领取条件是否满足
 		}
 		Map<String,Object> groupListMap = ((ArrayList<Map<String,Object>>)taskInfoMap.get("group_list")).get(0);
 		int actId=(int)groupListMap.get("act_id");
@@ -362,7 +336,7 @@ public class LiveTool6 {
 						System.out.println("Success by "+Thread.currentThread().getName());
 						Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
 						key=((Map<String, String>)dataMap.get("extra")).get("cdkey_content");
-						prizeName=(String)dataMap.get("name");
+						prizeName = URLDecoder.decode(reward_name);
 						end=true;
 					}else if(message.equals("请求过于频繁，请稍后再试")){
 						//Response: {"code":-509,"message":"请求过于频繁，请稍后再试","ttl":1}

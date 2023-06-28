@@ -172,9 +172,10 @@ public class LiveTool {
         Response refreshRes = client.newCall(getrefresh).execute();
         Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
         boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
+        refresh=false;
         if(refresh) {
             System.out.println("更新cookie...");
-            String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+            String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");
             Request getCorrespondPath = new Request.Builder()
                     .url(CPathapi)
                     .get()
@@ -184,6 +185,7 @@ public class LiveTool {
             });
             String CorrespondPath = (String) CPMap.get("CorrespondPath");
             System.out.println("CorrespondPath:" + CorrespondPath);
+
 
             String csrfUrl = String.format("https://www.bilibili.com/correspond/1/%s", CorrespondPath);
             Request getcsrf = new Request.Builder()

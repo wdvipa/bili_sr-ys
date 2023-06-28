@@ -136,8 +136,6 @@ public class LiveTool2 {
                 .readTimeout(1, TimeUnit.MINUTES)
                 .build();
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> cookiemap = cookieToMap(COOKIE);
-        CSRF = cookiemap.get("bili_jct");
         System.out.println("获取到task_id:" + taskId);
         System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
@@ -172,10 +170,14 @@ public class LiveTool2 {
             }
         }
 
+        Thread.sleep(45000);
+
         config = readJsonFile(f);
         configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
         //↓判断配置是否存在,不存在则用全局配置
         readconfig(config,configmap);
+        Map<String, String> cookiemap = cookieToMap(COOKIE);
+        CSRF = cookiemap.get("bili_jct");
 
         String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
         Request getrefresh =new Request.Builder()
@@ -186,9 +188,10 @@ public class LiveTool2 {
         Response refreshRes = client.newCall(getrefresh).execute();
         Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
         boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
-        if(refresh=true) {
+        refresh = false;
+        if(refresh) {
             System.out.println("更新cookie...");
-            String CPathapi = String.format("https://api.ikkun.cf/?lx=json");
+            String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");
             Request getCorrespondPath = new Request.Builder()
                     .url(CPathapi)
                     .get()
@@ -294,7 +297,7 @@ public class LiveTool2 {
                 satisfied=false;
                 System.out.println(dateFormat.format(new Date())+"领取条件仍不满足");
             }else{break;}
-            Thread.sleep(60000); //一秒查询一次领取条件是否满足
+            Thread.sleep(500); //一秒查询一次领取条件是否满足
         }
         Map<String,Object> groupListMap = ((ArrayList<Map<String,Object>>)taskInfoMap.get("group_list")).get(0);
         int actId=(int)groupListMap.get("act_id");
@@ -361,7 +364,7 @@ public class LiveTool2 {
                         System.out.println("Success by "+Thread.currentThread().getName());
                         Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
                         key=((Map<String, String>)dataMap.get("extra")).get("cdkey_content");
-                        prizeName=(String)dataMap.get("name");
+                        prizeName = URLDecoder.decode(reward_name);
                         end=true;
                     }else if(message.equals("请求过于频繁，请稍后再试")){
                         //Response: {"code":-509,"message":"请求过于频繁，请稍后再试","ttl":1}
