@@ -59,10 +59,16 @@ public class LiveTool5 {
             COOKIE= (String) config.get("cookie");
             COOKIE2= (String) config.get("cookie2");
             COOKIE3= (String) config.get("cookie3");
+            String YS= (String) config.get("ys");
             debug=Integer.parseInt(config.get("debug").toString());
             ac_time_value = (String) config.get("ac_time_value");
+            if (Objects.equals(YS, "ys")) {
+                taskId = (String) configmap.get("ystaskId");
+            }else {
+                taskId = (String) configmap.get("taskId");
+            }
+            ruid = (String) config.get("ruid");
             roomid = (String) config.get("roomid");
-            taskId = (String) configmap.get("taskId");
             interval = Integer.parseInt(configmap.get("interval").toString());
             Map<String, Object> time = (Map<String, Object>) configmap.get("time");
             hours = Integer.parseInt(time.get("h").toString());
@@ -81,24 +87,12 @@ public class LiveTool5 {
         Map<String, Object> config = FFL.readJsonFile(f);
         Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
         //↓判断配置是否存在,不存在则用全局配置
-        if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
-            COOKIE= (String) config.get("cookie");
-            COOKIE2= (String) config.get("cookie2");
-            COOKIE3= (String) config.get("cookie3");
-            debug=Integer.parseInt(config.get("debug").toString());
-            ac_time_value = (String) config.get("ac_time_value");
-            roomid = (String) config.get("roomid");
-            ruid = (String) config.get("ruid");
-            taskId = (String) configmap.get("taskId");
-            interval = Integer.parseInt(configmap.get("interval").toString());
-            Map<String, Object> time = (Map<String, Object>) configmap.get("time");
-            hours = Integer.parseInt(time.get("h").toString());
-            Minutes = Integer.parseInt(time.get("m").toString());
-            Seconds = Integer.parseInt(time.get("s").toString());
-            //更改变量为config配置
-        }else{
-            System.out.println("config.json配置文件错误或不存在");
-        }
+        readconfig(config,configmap);
+
+        OkHttpClient client=new OkHttpClient.Builder()
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
+        ObjectMapper mapper = new ObjectMapper();
         System.out.println("获取到task_id:" + taskId);
         System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
@@ -118,7 +112,8 @@ public class LiveTool5 {
         CSRF2 = cookie2map.get("bili_jct");
         CSRF3 = cookie3map.get("bili_jct");
 
-        boolean refresh = FFL.refrefrsh(COOKIE);
+        //boolean refresh = FFL.refrefrsh(COOKIE);
+        boolean refresh = false;
         refresh=false;
         if(refresh) {
             System.out.println("更新cookie...");

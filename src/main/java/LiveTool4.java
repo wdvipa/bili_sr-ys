@@ -2,7 +2,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import okhttp3.*;
 
 import java.io.*;
@@ -12,8 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class LiveTool4 {
@@ -56,9 +53,17 @@ public class LiveTool4 {
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
+            COOKIE2= (String) config.get("cookie2");
+            COOKIE3= (String) config.get("cookie3");
+            String YS= (String) config.get("ys");
             debug=Integer.parseInt(config.get("debug").toString());
             ac_time_value = (String) config.get("ac_time_value");
-            taskId = (String) configmap.get("taskId");
+            if (Objects.equals(YS, "ys")) {
+                taskId = (String) configmap.get("ystaskId");
+            }else {
+                taskId = (String) configmap.get("taskId");
+            }
+            roomid = (String) config.get("roomid");
             interval = Integer.parseInt(configmap.get("interval").toString());
             Map<String, Object> time = (Map<String, Object>) configmap.get("time");
             hours = Integer.parseInt(time.get("h").toString());
@@ -113,8 +118,8 @@ public class LiveTool4 {
         CSRF2 = cookie2map.get("bili_jct");
         CSRF3 = cookie3map.get("bili_jct");
 
-        boolean refresh = FFL.refrefrsh(COOKIE);
-        refresh=false;
+        //boolean refresh = FFL.refrefrsh(COOKIE);
+        boolean refresh=false;
         if(refresh) {
             System.out.println("更新cookie...");
             String CorrespondPath = FFL.getCorrespondPath();

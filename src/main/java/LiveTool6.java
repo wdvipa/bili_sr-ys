@@ -23,7 +23,7 @@ public class LiveTool6 {
 	private static String act_name="";
 	private static String task_name="";
 	private static String reward_name="";
-	private static String COOKIE;
+	private static String COOKIE,YS;
 	private static String CSRF;
 	private static String value = "";
 	private static String ac_time_value;
@@ -98,9 +98,14 @@ public class LiveTool6 {
 		//↓判断配置是否存在,不存在则用全局配置
 		if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
 			COOKIE= (String) config.get("cookie");
+			YS= (String) config.get("ys");
 			debug=Integer.parseInt(config.get("debug").toString());
 			ac_time_value = (String) config.get("ac_time_value");
-			taskId = (String) configmap.get("taskId");
+			if (Objects.equals(YS, "ys")) {
+				taskId = (String) configmap.get("ystaskId");
+			}else {
+				taskId = (String) configmap.get("taskId");
+			}
 			interval = Integer.parseInt(configmap.get("interval").toString());
 			Map<String, Object> time = (Map<String, Object>) configmap.get("time");
 			hours = Integer.parseInt(time.get("h").toString());

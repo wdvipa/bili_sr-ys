@@ -118,7 +118,8 @@ public class LiveTool3 {
         CSRF2 = cookie2map.get("bili_jct");
         CSRF3 = cookie3map.get("bili_jct");
 
-        boolean refresh = FFL.refrefrsh(COOKIE);
+        //boolean refresh = FFL.refrefrsh(COOKIE);
+        boolean refresh = false;
         if(refresh) {
             System.out.println("更新cookie...");
             String CorrespondPath = FFL.getCorrespondPath();
@@ -237,7 +238,7 @@ public class LiveTool3 {
                 satisfied=false;
                 System.out.println(dateFormat.format(new Date())+"领取条件仍不满足");
             }else{break;}
-            Thread.sleep(1000); //一秒查询一次领取条件是否满足
+            Thread.sleep(2000); //一秒查询一次领取条件是否满足
         }
         Map<String,Object> groupListMap = ((ArrayList<Map<String,Object>>)taskInfoMap.get("group_list")).get(0);
         int actId=(int)groupListMap.get("act_id");

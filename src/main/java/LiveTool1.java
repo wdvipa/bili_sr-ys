@@ -24,8 +24,7 @@ public class LiveTool1 {
     private static String act_name="";
     private static String task_name="";
     private static String reward_name="";
-    private static String COOKIE;
-    private static String CSRF;
+    private static String COOKIE,CSRF,YS;
     private static String value = "";
     private static String refresh_csrf;
     private static String ac_time_value;
@@ -96,9 +95,14 @@ public class LiveTool1 {
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
+            String YS= (String) config.get("ys");
             debug=Integer.parseInt(config.get("debug").toString());
             ac_time_value = (String) config.get("ac_time_value");
-            taskId = (String) configmap.get("taskId");
+            if (Objects.equals(YS, "ys")) {
+                taskId = (String) configmap.get("ystaskId");
+            }else {
+                taskId = (String) configmap.get("taskId");
+            }
             interval = Integer.parseInt(configmap.get("interval").toString());
             Map<String, Object> time = (Map<String, Object>) configmap.get("time");
             hours = Integer.parseInt(time.get("h").toString());
@@ -262,35 +266,47 @@ public class LiveTool1 {
         }
 
         System.out.println("等待领取条件满足...");
-        String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);
+        String infoUrl=String.format("https://api.bilibili.com/x/activity_components/mission/info?csrf=%s&task_id=%s",CSRF,taskId);
         Request infoRequest =new Request.Builder()
                 .url(infoUrl)
                 .get()
                 .addHeader("Cookie", COOKIE)
                 .build();
-        int receiveId;
-        Map<String, Object> taskInfoMap;
+        String act_id;
+        Map<String, Object> InfoDataMap;
         Map<String, Object> infoMap;
+        int Infostatus;
+        boolean InfoFinished;
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         while(true){
             Response infoResponse = client.newCall(infoRequest).execute();
             //response body见info-response.json
             infoMap = mapper.readValue(infoResponse.body().string(), new TypeReference<>(){});
-            taskInfoMap = (Map<String, Object>) ((Map<String, Object>) infoMap.get("data")).get("task_info");
-            receiveId=(int)taskInfoMap.get("receive_id");
-            if(receiveId==0){
+            InfoDataMap = (Map<String, Object>) infoMap.get("data");
+            Infostatus = (int) InfoDataMap.get("status");
+            InfoFinished = (boolean) InfoDataMap.get("task_finished");
+            if(!InfoFinished){
                 satisfied=false;
                 System.out.println(dateFormat.format(new Date())+"领取条件仍不满足");
+            }if (Infostatus==2) {
+                Date curTime = new Date();
+                if(satisfied){
+                    //当前为0:01之后判定为失败，这个判断条件用于[第一天没抢到，第二天0:00刷新剩余量]的情况
+                    if(curTime.getHours()==0 && curTime.getMinutes()>=1){
+                        end=true;
+                    }else if(printInterval==0){
+                        System.out.println(dateFormat.format(new Date())+"当日剩余量仍未刷新");
+                    }
+                }else{end=true;}
             }else{break;}
             Thread.sleep(5000); //一秒查询一次领取条件是否满足
         }
-        Map<String,Object> groupListMap = ((ArrayList<Map<String,Object>>)taskInfoMap.get("group_list")).get(0);
-        int actId=(int)groupListMap.get("act_id");
-        int bodyTaskId=(int)groupListMap.get("task_id");
-        int groupId=(int)groupListMap.get("group_id");
-        act_name = URLEncoder.encode((String) ((Map<String, Object>)((Map<String, Object>) infoMap.get("data")).get("act_info")).get("act_name"));
-        task_name = URLEncoder.encode((String) taskInfoMap.get("task_name"));
-        reward_name = URLEncoder.encode((String) ((Map<String, Object>) taskInfoMap.get("reward_info")).get("reward_name"));
+        //Map<String,Object> groupListMap = ((ArrayList<Map<String,Object>>)InfoDataMap.get("group_list")).get(0);
+        String actId= (String) InfoDataMap.get("act_id");
+        String bodyTaskId = (String)InfoDataMap.get("task_id");
+        act_name = URLEncoder.encode((String) ((Map<String, Object>) infoMap.get("data")).get("act_name"));
+        task_name = URLEncoder.encode((String) InfoDataMap.get("task_name"));
+        reward_name = URLEncoder.encode((String) ((Map<String, Object>) InfoDataMap.get("reward_info")).get("award_name"));
         System.out.println(act_name);
         System.out.println(task_name);
         System.out.println(reward_name);
@@ -298,7 +314,7 @@ public class LiveTool1 {
         System.out.println(URLDecoder.decode(act_name));
         System.out.println(URLDecoder.decode(task_name));
         System.out.println(URLDecoder.decode(reward_name));
-        ((Map<String, Object>) config.get(wj)).put("act_name",URLDecoder.decode(act_name));
+        ((Map<String, Object>) config.get(wj)).put("activity_name",URLDecoder.decode(act_name));
         ((Map<String, Object>) config.get(wj)).put("task_name",URLDecoder.decode(task_name));
         ((Map<String, Object>) config.get(wj)).put("reward_name",URLDecoder.decode(reward_name));
         String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
@@ -312,17 +328,16 @@ public class LiveTool1 {
         System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
         FormBody clickBody =new FormBody.Builder()
                 .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
-                .add("act_id", String.valueOf(actId))
                 .add("task_id", String.valueOf(bodyTaskId))
-                .add("group_id", String.valueOf(groupId))
-                .add("receive_id", String.valueOf(receiveId))
-                .add("receive_from","missionPage")
-                .add("act_name", act_name)
+                .add("activity_id", String.valueOf(actId))
+                .add("activity_name", act_name)
                 .add("task_name", task_name)
                 .add("reward_name", reward_name)
+                .add("gaia_vtoken", "")
+                .add("receive_from","missionPage")
                 .build();
         Request clickRequest=new Request.Builder()
-                .url("https://api.bilibili.com/x/activity/mission/task/reward/receive")
+                .url("https://api.bilibili.com/x/activity_components/mission/receive")
                 .post(clickBody)
                 .addHeader("Cookie",COOKIE)
                 .build();
@@ -333,7 +348,7 @@ public class LiveTool1 {
                     String responseStr = response.body().string();
                     Map<String,Object> jsonMap=mapper.readValue(responseStr,new TypeReference<>(){});
                     Object message = jsonMap.get("message");
-                    if(message.equals("来晚了，奖品已被领完~")){
+                    if(message.equals("库存已经使用完")){
                         //Response: {"code":75154,"message":"来晚了，奖品已被领完~","ttl":1,"data":null}
                         Date curTime = new Date();
                         if(satisfied){
@@ -358,7 +373,7 @@ public class LiveTool1 {
                     }else if(message.equals("超出领取数量限制")){
                         //Response: {"code":75256,"message":"超出领取数量限制","ttl":1,"data":null}
                         end=true;
-                    }else if(message.equals("任务奖励已领取")){
+                    }else if(message.equals("任务奖励已经领取")){
                         //Response: {"code":75086,"message":"任务奖励已领取","ttl":1,"data":null}
                         end=true;
                     }else if(requestCount.get()>0){

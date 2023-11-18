@@ -153,8 +153,8 @@ public class LiveTool_KK {
 				.build();
 		Response refreshRes = client.newCall(getrefresh).execute();
 		Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
-		boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
-		refresh=false;
+		//boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
+		boolean refresh=false;
 		if(refresh) {
 			System.out.println("更新cookie...");
 			String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");

@@ -2,30 +2,34 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import okhttp3.*;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("SpellCheckingInspection")
-public class LiveTool {
+public class LiveTool4_1 {
     //【每次启动前都要配置最新的cookie和csrf，否则可能有bug】
     private static String f = "config.json";
-    private static String wj = "lc";
+    private static String wj = "4";
     private static String taskId="";
     private static String act_name="";
     private static String task_name="";
     private static String reward_name="";
+    private static boolean rw=true;
     private static String COOKIE;
+    private static String COOKIE2;
+    private static String COOKIE3;
     private static String CSRF;
+    private static String CSRF2;
+    private static String CSRF3;
+
+    private static String roomid = "23860299";
     private static String value = "";
     private static String refresh_csrf;
     private static String ac_time_value;
@@ -40,70 +44,22 @@ public class LiveTool {
     static String key = null;
     static String prizeName = null;
     static boolean satisfied=true; //**脚本运行前**领取条件是否满足
-
-    public static Map<String,String> cookieToMap(String value) {
-        Map<String, String> map = new HashMap<String, String>();
-        value = value.replace(" ", "");
-        if (value.contains(";")) {
-            String values[] = value.split(";");
-            for (String val : values) {
-                String vals[] = val.split("=");
-                map.put(vals[0], vals[1]);
-            }
-        } else {
-            String values[] = value.split("=");
-            map.put(values[0], values[1]);
-        }
-        return map;
-    }
-    public static String MapTocookie(Map<String,String> map) {
-        map.forEach((k, v) -> {
-            value = value + k + "=" + v + ";";
-            System.out.println("Key: " + k + ", Value: " + v);
-        });
-        return value;
-    }
-    public static Map<String, Object> readJsonFile(String fileName) {
-        Gson gson = new Gson();
-        String json;
-        try {
-            File file = new File(fileName);
-            Reader reader = new InputStreamReader(new FileInputStream(file), "utf-8");
-            int ch = 0;
-            StringBuffer buffer = new StringBuffer();
-            while ((ch = reader.read()) != -1) {
-                buffer.append((char) ch);
-            }
-            reader.close();
-            json = buffer.toString();
-            return gson.fromJson(json, Map.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    public static void writeFile(String file,String newfile,boolean append){
-        try {
-            FileWriter fw = new FileWriter(file,append); //创,覆盖写入
-            fw.write(newfile); //写
-            fw.close();  //关
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    static OkHttpClient client=new OkHttpClient.Builder()
+            .readTimeout(1, TimeUnit.MINUTES)
+            .build();
+    static ObjectMapper mapper = new ObjectMapper();
 
     public static void readconfig (Map<String, Object> config,Map<String, Object> configmap){
         //↓判断配置是否存在,不存在则用全局配置
         if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
             COOKIE= (String) config.get("cookie");
+            COOKIE2= (String) config.get("cookie2");
+            COOKIE3= (String) config.get("cookie3");
             String YS= (String) config.get("ys");
             debug=Integer.parseInt(config.get("debug").toString());
             ac_time_value = (String) config.get("ac_time_value");
-            if (Objects.equals(YS, "ys")) {
-                taskId = (String) configmap.get("ystaskId");
-            }else {
-                taskId = (String) configmap.get("taskId");
-            }
+            taskId = (String) configmap.get("taskId");
+            roomid = (String) config.get("roomid");
             interval = Integer.parseInt(configmap.get("interval").toString());
             Map<String, Object> time = (Map<String, Object>) configmap.get("time");
             hours = Integer.parseInt(time.get("h").toString());
@@ -115,20 +71,30 @@ public class LiveTool {
         }
     }
 
+
     @SuppressWarnings({"ConstantConditions","deprecation","unchecked"})
-    public static void main(String[] args) throws IOException,InterruptedException{
+    public static void main(String[] args) throws Exception {
         //String fileName = "src/main/resources/config.json";
-        Map<String, Object> config = readJsonFile(f);
+        Map<String, Object> config = FFL.readJsonFile(f);
         Map<String, Object> configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
         //↓判断配置是否存在,不存在则用全局配置
-        readconfig(config,configmap);
-
-        OkHttpClient client=new OkHttpClient.Builder()
-                .readTimeout(1, TimeUnit.MINUTES)
-                .build();
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> cookiemap = cookieToMap(COOKIE);
-        CSRF = cookiemap.get("bili_jct");
+        if(configmap.containsKey("taskId")&&configmap.containsKey("interval")&&configmap.containsKey("time")){
+            COOKIE= (String) config.get("cookie");
+            COOKIE2= (String) config.get("cookie2");
+            COOKIE3= (String) config.get("cookie3");
+            debug=Integer.parseInt(config.get("debug").toString());
+            ac_time_value = (String) config.get("ac_time_value");
+            roomid = (String) config.get("roomid");
+            taskId = (String) configmap.get("taskId");
+            interval = Integer.parseInt(configmap.get("interval").toString());
+            Map<String, Object> time = (Map<String, Object>) configmap.get("time");
+            hours = Integer.parseInt(time.get("h").toString());
+            Minutes = Integer.parseInt(time.get("m").toString());
+            Seconds = Integer.parseInt(time.get("s").toString());
+            //更改变量为config配置
+        }else{
+            System.out.println("config.json配置文件错误或不存在");
+        }
         System.out.println("获取到task_id:" + taskId);
         System.out.println("获取到定时:" + hours + "时" + Minutes + "分" + Seconds + "秒");
 
@@ -137,50 +103,29 @@ public class LiveTool {
         //1.等待领取条件满足
         FFL.timeing(debug,hours,Minutes,Seconds);
 
-        config = readJsonFile(f);
+        config = FFL.readJsonFile(f);
         configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
         //↓判断配置是否存在,不存在则用全局配置
         readconfig(config,configmap);
+        Map<String, String> cookiemap = FFL.cookieToMap(COOKIE);
+        Map<String, String> cookie2map = FFL.cookieToMap(COOKIE2);
+        Map<String, String> cookie3map = FFL.cookieToMap(COOKIE3);
+        CSRF = cookiemap.get("bili_jct");
+        CSRF2 = cookie2map.get("bili_jct");
+        CSRF3 = cookie3map.get("bili_jct");
 
-        String refreshUrl=String.format("https://passport.bilibili.com/x/passport-login/web/cookie/info");
-        Request getrefresh =new Request.Builder()
-                .url(refreshUrl)
-                .get()
-                .addHeader("Cookie", COOKIE)
-                .build();
-        Response refreshRes = client.newCall(getrefresh).execute();
-        Map<String, Object> refMap = mapper.readValue(refreshRes.body().string(), new TypeReference<>(){});
-        boolean refresh = (boolean) ((Map<String, Object>) refMap.get("data")).get("refresh");
+        boolean refresh = FFL.refrefrsh(COOKIE);
         refresh=false;
         if(refresh) {
             System.out.println("更新cookie...");
-            String CPathapi = String.format("https://api.ikkun.cf/CorrespondPath?lx=json");
-            Request getCorrespondPath = new Request.Builder()
-                    .url(CPathapi)
-                    .get()
-                    .build();
-            Response CPResponse = client.newCall(getCorrespondPath).execute();
-            Map<String, Object> CPMap = mapper.readValue(CPResponse.body().string(), new TypeReference<>() {
-            });
-            String CorrespondPath = (String) CPMap.get("CorrespondPath");
+            String CorrespondPath = FFL.getCorrespondPath();
             System.out.println("CorrespondPath:" + CorrespondPath);
 
+            String refresh_csrf = FFL.getrefresh_csrf(COOKIE,CorrespondPath);
+            System.out.println("refresh_csrf:" + refresh_csrf);
 
-            String csrfUrl = String.format("https://www.bilibili.com/correspond/1/%s", CorrespondPath);
-            Request getcsrf = new Request.Builder()
-                    .url(csrfUrl)
-                    .get()
-                    .addHeader("Cookie", COOKIE)
-                    .build();
-            Response csrfResponse = client.newCall(getcsrf).execute();
-            String csrfbady = csrfResponse.body().string();
-            Matcher CSRFZZ = Pattern.compile("(?<=id=\"1-name\">).*(?=</div><div)").matcher(csrfbady);
-            while (CSRFZZ.find()) {
-                refresh_csrf = CSRFZZ.group();
-                System.out.println(CSRFZZ.group());
-            }
-            CSRF = cookiemap.get("bili_jct");
             String refresh_token = ac_time_value;
+            String url = "https://passport.bilibili.com/x/passport-login/web/cookie/refresh?csrf="+CSRF.split("&")[0]+"&refresh_csrf="+refresh_csrf+"&source=main_web&refresh_token="+refresh_token;
             FormBody refreshBody = new FormBody.Builder()
                     .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
                     .add("refresh_csrf", refresh_csrf)
@@ -188,7 +133,7 @@ public class LiveTool {
                     .add("refresh_token", refresh_token)
                     .build();
             Request refreshRequest = new Request.Builder()
-                    .url("https://passport.bilibili.com/x/passport-login/web/cookie/refresh")
+                    .url(url)
                     .post(refreshBody)
                     .addHeader("Cookie", COOKIE)
                     .build();
@@ -205,7 +150,7 @@ public class LiveTool {
                     String s = c.split(";")[0];
                     cc = cc + s + ";";
                 }
-                Map<String, String> ccmap = cookieToMap(cc);
+                Map<String, String> ccmap = FFL.cookieToMap(cc);
                 //String cookiejson = JSON.toJSONString(cookiemap);
                 //JSONObject jsonObject = JSONObject.parseObject(cookiejson);
                 cookiemap.put("SESSDATA", ccmap.get("SESSDATA"));
@@ -214,15 +159,11 @@ public class LiveTool {
                 cookiemap.put("DedeUserID__ckMd5", ccmap.get("DedeUserID__ckMd5"));
                 cookiemap.put("sid", ccmap.get("sid"));
             }
-            String newcookie = MapTocookie(cookiemap);
+            String newcookie = FFL.MapTocookie(cookiemap);
             config.put("cookie", newcookie);
             config.put("ac_time_value", newrefresh_token);
             String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
-            writeFile(f,newconfig,false);
-            config = readJsonFile(f);
-            configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
-            //↓判断配置是否存在,不存在则用全局配置
-            readconfig(config,configmap);
+            FFL.writeFile(f,newconfig,false);
 
             FormBody confirmBody = new FormBody.Builder()
                     .add("csrf", CSRF.split("&")[0]) //去除csrf中的id字段
@@ -243,6 +184,25 @@ public class LiveTool {
                 System.out.println("发生错误:" + confirmMap.get("message"));
             }
         }
+
+        if(rw) {
+            Thread.sleep(3000);
+            System.out.println("正在完成任务要求 弹幕*6...");
+            int i = 0;
+            String msg = "1";
+            //防止拦截,发送8条
+            while(i<10) {
+                i = i+1;
+                msg = FFL.sendmsg(COOKIE2,roomid,CSRF2);
+                System.out.println("账号1：已发送第"+i+"/8条弹幕：" + msg +",更换账号发送下一条...");
+                Thread.sleep(1000);
+                i = i+1;
+                msg = FFL.sendmsg(COOKIE3,roomid,CSRF3);
+                System.out.println("账号2：已发送第"+i+"/8条弹幕：" + msg +",等待1秒后发送下一条...");
+                Thread.sleep(1000);
+            }
+        }
+
 
         System.out.println("等待领取条件满足...");
         String infoUrl=String.format("https://api.bilibili.com/x/activity/mission/single_task?csrf=%s&id=%s",CSRF,taskId);
@@ -277,6 +237,7 @@ public class LiveTool {
         System.out.println(act_name);
         System.out.println(task_name);
         System.out.println(reward_name);
+        prizeName = URLDecoder.decode(reward_name);
         System.out.println(URLDecoder.decode(act_name));
         System.out.println(URLDecoder.decode(task_name));
         System.out.println(URLDecoder.decode(reward_name));
@@ -284,7 +245,11 @@ public class LiveTool {
         ((Map<String, Object>) config.get(wj)).put("task_name",URLDecoder.decode(task_name));
         ((Map<String, Object>) config.get(wj)).put("reward_name",URLDecoder.decode(reward_name));
         String newconfig = JSON.toJSONString(config, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
-        writeFile(f,newconfig,false);
+        FFL.writeFile(f,newconfig,false);
+        config = FFL.readJsonFile(f);
+        configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
+        //↓判断配置是否存在,不存在则用全局配置
+        readconfig(config,configmap);
 
         //2.领取条件满足后，脚本触发，CPU使用率会接近100%
         System.out.printf("领取条件满足，脚本启动于%s\n",dateFormat.format(new Date()));
@@ -357,7 +322,7 @@ public class LiveTool {
             System.out.println("奖品已被领完，抢奖品失败");
         }else{
             String dhm = "\n" + "【"+prizeName+"】 " + key;
-            writeFile("dhm.txt",dhm,true);
+            FFL.writeFile("dhm.txt",dhm,true);
             System.out.printf("抢奖品成功,获得【%s】,兑换码【%s】\n",prizeName,key);
         }
         System.exit(1);

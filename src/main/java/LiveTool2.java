@@ -170,7 +170,7 @@ public class LiveTool2 {
             }
         }
 
-        Thread.sleep(45000);
+        //Thread.sleep(45000);
 
         config = readJsonFile(f);
         configmap = (Map<String, Object>) config.get(wj); //读取本文件配置
