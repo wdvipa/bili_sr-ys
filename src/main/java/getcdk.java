@@ -36,10 +36,10 @@ public class getcdk {
         StringBuilder xqdhm = new StringBuilder("=============星琼=============");
         StringBuilder mydhm = new StringBuilder("=============漫游指南=============");
         StringBuilder mxdhm = new StringBuilder("=============冒险记录=============");
-        StringBuilder tcdhm = new StringBuilder("=============提纯以太=============");
+        StringBuilder sjdhm = new StringBuilder("=============遗失碎金=============");
         StringBuilder xyddhm = new StringBuilder("=============信用点=============");
         int y = 0,ys = 0,dyx = 0,mjk = 0,mxj = 0,ml = 0;
-        int xqsl = 0,sr =0,xq = 0,my = 0,xyd = 0,mx = 0,tc = 0;
+        int xqsl = 0,sr =0,xq = 0,my = 0,xyd = 0,mx = 0,sj = 0;
         String f = "config.json";
         Map<String, Object> config = FFL.readJsonFile(f);
         String wj = "get";
@@ -86,10 +86,11 @@ public class getcdk {
             }
         }
 
+        String NewActivity_id = null;
         if (configmap != null) {
-            activity_id = Integer.parseInt(configmap.get("sr").toString());
+            NewActivity_id = configmap.get("sr").toString();
         }
-        listob = new JSONObject(FFL.getCDK(activity_id, COOKIE, CSRF));
+        listob = new JSONObject(FFL.NewGetCDK(NewActivity_id, COOKIE, CSRF));
         list = (ArrayList) listob.get("list");
         for (Object o : list) {
             Map<String, Object> temp = (Map<String, Object>) o;
@@ -115,9 +116,9 @@ public class getcdk {
             } else if (name.startsWith("冒险记录")) {
                 mx = mx + 1;
                 mxdhm.append("\n").append(time).append("  [").append(name).append("]    |").append(cdk);
-            } else if (name.startsWith("提纯以太")) {
-                tc = tc + 1;
-                tcdhm.append("\n").append(time).append("  [").append(name).append("]    |").append(cdk);
+            } else if (name.startsWith("遗失碎金")) {
+                sj = sj + 1;
+                sjdhm.append("\n").append(time).append("  [").append(name).append("]    |").append(cdk);
             } else if (name.startsWith("信用点")) {
                 xyd = xyd + 1;
                 xyddhm.append("\n").append(time).append("  [").append(name).append("]    |").append(cdk);
@@ -125,14 +126,14 @@ public class getcdk {
         }
         dhmall = dhmall + "\n" + ydhm;
         dhmall = dhmall+ "\n" + srdhm;
-        fldhm = fldhm + "\n" + ysdhm + "\n" + dyxdhm + "\n" + mjkdhm + "\n" + mxjdhm  + "\n" + mldhm + "\n" + xqdhm + "\n" + mydhm + "\n" + tcdhm + "\n" + mxdhm + "\n" + xyddhm;
+        fldhm = fldhm + "\n" + ysdhm + "\n" + dyxdhm + "\n" + mjkdhm + "\n" + mxjdhm  + "\n" + mldhm + "\n" + xqdhm + "\n" + mydhm + "\n" + sjdhm + "\n" + mxdhm + "\n" + xyddhm;
 
         FFL.writeFile("ysdhm.txt",ydhm,false);
         FFL.writeFile("srdhm.txt", srdhm.toString(),false);
         FFL.writeFile("kjdhm.txt",fldhm,false);
         FFL.writeFile("dhmall.txt",dhmall,false);
         System.out.println(dhmall);
-        System.out.println("星琼 " + xq + "个\n漫游指南*2 " + my + "个\n冒险记录*6 " + mx + "个\n提纯以太*5 " + tc + "个\n信用点*11111 " + xyd + "个\n");
-        System.out.println("星琼共" + xqsl + "个\n漫游指南共" + my*2 + "个\n冒险记录共" + mx*6 + "个\n提纯以太共" + tc*5 + "个\n信用点共" + xyd*11111 + "个");
+        System.out.println("星琼 " + xq + "个\n漫游指南*2 " + my + "个\n冒险记录*6 " + mx + "个\n遗失碎金*5 " + sj + "个\n信用点*11111 " + xyd + "个\n");
+        System.out.println("星琼共" + xqsl + "个\n漫游指南共" + my*2 + "个\n冒险记录共" + mx*6 + "个\n遗失碎金共" + sj*5 + "个\n信用点共" + xyd*11111 + "个");
     }
 }

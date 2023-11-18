@@ -192,6 +192,18 @@ public class FFL {
         Map<String, Object> list = (Map<String, Object>) listMap.get("data");
         return list;
     }
+    public static Map<String, Object> NewGetCDK(String activity_id,String COOKIE,String csrf) throws IOException {
+        String NewCdkListURL=String.format("https://api.bilibili.com/x/activity_components/mission/mylist?activity_id=%s&csrf=%s",activity_id,csrf);
+        Request NewGetCdkList =new Request.Builder()
+                .url(NewCdkListURL)
+                .get()
+                .addHeader("Cookie", COOKIE)
+                .build();
+        Response NewCdkListRes = client.newCall(NewGetCdkList).execute();
+        Map<String, Object> listMap = mapper.readValue(NewCdkListRes.body().string(), new TypeReference<>(){});
+        Map<String, Object> list = (Map<String, Object>) listMap.get("data");
+        return list;
+    }
     public static String sendmsg(String COOKIE,String roomid,String CSRF) throws Exception {
         List<String> list = getFileContext("smg.txt");
         String msg = list.get(new Random().nextInt(list.size()));
